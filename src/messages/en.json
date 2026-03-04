@@ -1,0 +1,115 @@
+{
+  "metadata": {
+    "home": {
+      "title": "Urbandeam — Excel, PDF & Notion Templates for Personal Development",
+      "description": "Discover our premium digital templates to boost your productivity and reach your personal goals."
+    },
+    "products": {
+      "title": "All Products — Urbandeam",
+      "description": "Excel, PDF and Notion templates for personal development, productivity and financial management."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "contact": "Contact",
+    "account": "My account",
+    "cart": "Cart",
+    "currency": "Currency"
+  },
+  "hero": {
+    "badge": "New templates available",
+    "title": "Unlock your full potential",
+    "subtitle": "Excel, Notion and PDF templates designed to help you manage your budget, boost productivity and reach your goals.",
+    "cta_primary": "Browse products",
+    "cta_secondary": "Learn more",
+    "social_proof": "Join 10,000+ happy customers"
+  },
+  "products": {
+    "popular_title": "Most popular",
+    "all_title": "All products",
+    "filter_all": "All",
+    "filter_excel": "Excel",
+    "filter_notion": "Notion",
+    "filter_pdf": "PDF",
+    "add_to_cart": "Add to cart",
+    "buy_now": "Buy now",
+    "buy_now_price": "Buy — {price}",
+    "preview": "Preview",
+    "on_sale": "Sale",
+    "new": "New",
+    "no_products": "No products found.",
+    "sort_popular": "Most popular",
+    "sort_newest": "Newest",
+    "sort_price_asc": "Price: low to high",
+    "sort_price_desc": "Price: high to low"
+  },
+  "product_page": {
+    "download_info": "Instant download after payment",
+    "secure_payment": "Secure payment via Stripe",
+    "download_limit": "5 downloads included",
+    "support": "Email support included",
+    "related_title": "You might also like",
+    "faq_title": "Frequently asked questions",
+    "faq_q1": "How do I receive my file?",
+    "faq_a1": "As soon as your payment is confirmed, you receive an email with the download link. The file is also available in your account area.",
+    "faq_q2": "How many times can I download?",
+    "faq_a2": "You can download your purchase up to 5 times, valid for 30 days.",
+    "faq_q3": "Which version is it compatible with?",
+    "faq_a3": "Excel templates are compatible with Microsoft Excel 2016+ and Google Sheets. Notion templates require a Notion account (free)."
+  },
+  "cart": {
+    "title": "Your cart",
+    "empty": "Your cart is empty.",
+    "empty_cta": "Browse products",
+    "total": "Total",
+    "checkout": "Checkout",
+    "continue": "Continue shopping",
+    "remove": "Remove",
+    "secure_info": "100% secure payment by Stripe"
+  },
+  "checkout": {
+    "success_title": "Order confirmed! 🎉",
+    "success_subtitle": "Thank you for your purchase. You will receive an email with your download links.",
+    "success_cta": "Access my downloads",
+    "cancel_title": "Order cancelled",
+    "cancel_subtitle": "Your order has been cancelled. You have not been charged.",
+    "cancel_cta": "Back to product"
+  },
+  "account": {
+    "title": "My account",
+    "orders_title": "My purchases",
+    "no_orders": "You haven't made any purchases yet.",
+    "download": "Download",
+    "downloads_remaining": "{count} downloads remaining",
+    "expired": "Link expired",
+    "order_date": "Purchased on {date}",
+    "logout": "Sign out"
+  },
+  "footer": {
+    "newsletter_title": "Stay updated",
+    "newsletter_subtitle": "New resources delivered straight to your inbox.",
+    "newsletter_placeholder": "your@email.com",
+    "newsletter_cta": "Subscribe",
+    "links_title": "Quick links",
+    "legal_title": "Legal",
+    "privacy": "Privacy policy",
+    "terms": "Terms of sale",
+    "contact": "Contact",
+    "copyright": "© {year} Urbandeam. All rights reserved.",
+    "tagline": "Made with ❤️ for your personal development."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong.",
+    "retry": "Try again",
+    "back": "Back",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "search_placeholder": "Search for a template..."
+  }
+}

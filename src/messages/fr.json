@@ -1,0 +1,115 @@
+{
+  "metadata": {
+    "home": {
+      "title": "Urbandeam — Templates Excel, PDF & Notion pour le développement personnel",
+      "description": "Découvrez nos templates digitaux premium pour booster votre productivité et atteindre vos objectifs personnels."
+    },
+    "products": {
+      "title": "Tous nos produits — Urbandeam",
+      "description": "Templates Excel, PDF et Notion pour le développement personnel, la productivité et la gestion financière."
+    }
+  },
+  "nav": {
+    "home": "Accueil",
+    "products": "Produits",
+    "contact": "Contact",
+    "account": "Mon compte",
+    "cart": "Panier",
+    "currency": "Devise"
+  },
+  "hero": {
+    "badge": "Nouveaux templates disponibles",
+    "title": "Développe ton plein potentiel",
+    "subtitle": "Des templates Excel, Notion et PDF conçus pour t'aider à gérer ton budget, booster ta productivité et atteindre tes objectifs.",
+    "cta_primary": "Voir les produits",
+    "cta_secondary": "En savoir plus",
+    "social_proof": "Rejoins +10 000 clients satisfaits"
+  },
+  "products": {
+    "popular_title": "Les plus populaires",
+    "all_title": "Tous les produits",
+    "filter_all": "Tous",
+    "filter_excel": "Excel",
+    "filter_notion": "Notion",
+    "filter_pdf": "PDF",
+    "add_to_cart": "Ajouter au panier",
+    "buy_now": "Acheter maintenant",
+    "buy_now_price": "Acheter — {price}",
+    "preview": "Aperçu",
+    "on_sale": "Promo",
+    "new": "Nouveau",
+    "no_products": "Aucun produit trouvé.",
+    "sort_popular": "Les plus populaires",
+    "sort_newest": "Les plus récents",
+    "sort_price_asc": "Prix croissant",
+    "sort_price_desc": "Prix décroissant"
+  },
+  "product_page": {
+    "download_info": "Téléchargement immédiat après paiement",
+    "secure_payment": "Paiement sécurisé via Stripe",
+    "download_limit": "5 téléchargements inclus",
+    "support": "Support par email inclus",
+    "related_title": "Vous aimerez aussi",
+    "faq_title": "Questions fréquentes",
+    "faq_q1": "Comment je reçois mon fichier ?",
+    "faq_a1": "Dès que votre paiement est confirmé, vous recevez un email avec le lien de téléchargement. Le fichier est disponible directement dans votre espace client.",
+    "faq_q2": "Combien de fois puis-je télécharger ?",
+    "faq_a2": "Vous pouvez télécharger votre achat jusqu'à 5 fois, valable pendant 30 jours.",
+    "faq_q3": "Compatible avec quelle version ?",
+    "faq_a3": "Les templates Excel sont compatibles avec Microsoft Excel 2016+ et Google Sheets. Les templates Notion nécessitent un compte Notion (gratuit)."
+  },
+  "cart": {
+    "title": "Votre panier",
+    "empty": "Votre panier est vide.",
+    "empty_cta": "Voir les produits",
+    "total": "Total",
+    "checkout": "Passer la commande",
+    "continue": "Continuer mes achats",
+    "remove": "Retirer",
+    "secure_info": "Paiement 100% sécurisé par Stripe"
+  },
+  "checkout": {
+    "success_title": "Commande confirmée ! 🎉",
+    "success_subtitle": "Merci pour votre achat. Vous allez recevoir un email avec vos liens de téléchargement.",
+    "success_cta": "Accéder à mes téléchargements",
+    "cancel_title": "Commande annulée",
+    "cancel_subtitle": "Votre commande a été annulée. Vous n'avez pas été débité.",
+    "cancel_cta": "Retourner au produit"
+  },
+  "account": {
+    "title": "Mon espace",
+    "orders_title": "Mes achats",
+    "no_orders": "Vous n'avez pas encore effectué d'achat.",
+    "download": "Télécharger",
+    "downloads_remaining": "{count} téléchargements restants",
+    "expired": "Lien expiré",
+    "order_date": "Acheté le {date}",
+    "logout": "Se déconnecter"
+  },
+  "footer": {
+    "newsletter_title": "Restez informé(e)",
+    "newsletter_subtitle": "Les nouvelles ressources directement dans votre boîte mail.",
+    "newsletter_placeholder": "votre@email.com",
+    "newsletter_cta": "S'inscrire",
+    "links_title": "Liens utiles",
+    "legal_title": "Légal",
+    "privacy": "Politique de confidentialité",
+    "terms": "CGV",
+    "contact": "Contact",
+    "copyright": "© {year} Urbandeam. Tous droits réservés.",
+    "tagline": "Fabriqué avec ❤️ pour votre développement personnel."
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue.",
+    "retry": "Réessayer",
+    "back": "Retour",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "search_placeholder": "Rechercher un template..."
+  }
+}
