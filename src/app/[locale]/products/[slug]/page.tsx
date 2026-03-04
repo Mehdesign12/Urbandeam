@@ -135,15 +135,9 @@ export default async function ProductPage({ params }: Props) {
           fontSize: '12px',
           color: 'var(--color-muted)',
         }}>
-          <Link href={`/${locale}`} style={{ color: 'var(--color-muted)', textDecoration: 'none' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-black)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-muted)')}
-          >{isFr ? 'Accueil' : 'Home'}</Link>
+          <Link href={`/${locale}`} className="ud-breadcrumb-link">{isFr ? 'Accueil' : 'Home'}</Link>
           <span>/</span>
-          <Link href={`/${locale}/products`} style={{ color: 'var(--color-muted)', textDecoration: 'none' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-black)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-muted)')}
-          >{isFr ? 'Produits' : 'Products'}</Link>
+          <Link href={`/${locale}/products`} className="ud-breadcrumb-link">{isFr ? 'Produits' : 'Products'}</Link>
           <span>/</span>
           <span style={{ color: 'var(--color-black)' }}>{title}</span>
         </div>
@@ -368,6 +362,12 @@ export default async function ProductPage({ params }: Props) {
       <Footer locale={locale} />
 
       <style>{`
+        .ud-breadcrumb-link {
+          color: var(--color-muted);
+          text-decoration: none;
+          transition: color 0.15s;
+        }
+        .ud-breadcrumb-link:hover { color: var(--color-black); }
         @media (max-width: 768px) {
           .product-detail-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
           .trust-grid { flex-direction: column; gap: 10px !important; }
