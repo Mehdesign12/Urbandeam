@@ -1,9 +1,11 @@
+import { Suspense } from 'react'
 import { createAdminClient } from '@/lib/supabase/server'
 import type { Product, ProductCategory } from '@/types'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ProductGrid from '@/components/shop/ProductGrid'
 import CatalogFilters from '@/components/shop/CatalogFilters'
+import SortSelect from '@/components/shop/SortSelect'
 import type { Metadata } from 'next'
 
 type Props = {
@@ -22,26 +24,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function getProducts(category?: string, sort?: string): Promise<Product[]> {
-  const supabase = createAdminClient()
-  let query = supabase
-    .from('products')
-    .select('*')
-    .eq('is_published', true)
+  try {
+    const supabase = createAdminClient()
+    let query = supabase
+      .from('products')
+      .select('*')
+      .eq('is_published', true)
 
-  if (category && ['excel', 'pdf', 'notion'].includes(category)) {
-    query = query.eq('category', category as ProductCategory)
+    if (category && ['excel', 'pdf', 'notion'].includes(category)) {
+      query = query.eq('category', category as ProductCategory)
+    }
+
+    switch (sort) {
+      case 'price_asc':  query = query.order('price', { ascending: true }); break
+      case 'price_desc': query = query.order('price', { ascending: false }); break
+      case 'newest':     query = query.order('created_at', { ascending: false }); break
+      default:           query = query.order('sort_order', { ascending: true }); break
+    }
+
+    const { data, error } = await query
+    if (error) { console.error('Supabase error:', error); return [] }
+    return data ?? []
+  } catch (err) {
+    console.error('Failed to fetch products:', err)
+    return []
   }
-
-  switch (sort) {
-    case 'price_asc':  query = query.order('price', { ascending: true }); break
-    case 'price_desc': query = query.order('price', { ascending: false }); break
-    case 'newest':     query = query.order('created_at', { ascending: false }); break
-    default:           query = query.order('sort_order', { ascending: true }); break
-  }
-
-  const { data, error } = await query
-  if (error) { console.error(error); return [] }
-  return data ?? []
 }
 
 const SORT_OPTIONS = {
@@ -115,45 +122,66 @@ export default async function ProductsPage({ params, searchParams }: Props) {
                   }
                 </h1>
                 <p style={{ fontSize: '14px', color: 'var(--color-secondary)' }}>
-                  {products.length} {isFr ? (products.length > 1 ? 'produits' : 'produit') : (products.length > 1 ? 'products' : 'product')}
+                  {products.length} {isFr
+                    ? (products.length > 1 ? 'produits' : 'produit')
+                    : (products.length > 1 ? 'products' : 'product')
+                  }
                 </p>
               </div>
 
-              {/* Sort select */}
-              <select
-                defaultValue={sort ?? 'popular'}
-                style={{
+              {/* SortSelect — Client Component, nécessite Suspense */}
+              <Suspense fallback={
+                <div style={{
                   padding: '8px 32px 8px 12px',
                   border: '1px solid var(--color-border)',
                   borderRadius: '6px',
                   fontSize: '13px',
-                  fontFamily: 'var(--font-sans)',
                   background: 'white',
-                  color: 'var(--color-black)',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  appearance: 'none',
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23A3A3A3' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 10px center',
-                }}
-              >
-                {sortOptions.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
+                  color: 'var(--color-muted)',
+                  minWidth: '160px',
+                }}>
+                  {isFr ? 'Tri...' : 'Sort...'}
+                </div>
+              }>
+                <SortSelect options={sortOptions} activeSort={sort ?? 'popular'} />
+              </Suspense>
             </div>
           </div>
         </div>
 
         {/* ── Filtres + Grille ── */}
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 60px 80px' }}>
-          <CatalogFilters categories={CATEGORIES} activeCategory={cat ?? ''} locale={locale} />
+          {/* CatalogFilters — Client Component avec useSearchParams, nécessite Suspense */}
+          <Suspense fallback={
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '28px' }}>
+              {CATEGORIES.map(c => (
+                <div key={c.value} style={{
+                  padding: '7px 16px',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  border: '1px solid var(--color-border)',
+                  background: 'white',
+                  color: 'var(--color-muted)',
+                }}>
+                  {c.label}
+                </div>
+              ))}
+            </div>
+          }>
+            <CatalogFilters categories={CATEGORIES} activeCategory={cat ?? ''} locale={locale} />
+          </Suspense>
+
           <ProductGrid products={products} locale={locale} columns={4} priorityCount={4} />
         </div>
       </main>
 
       <Footer locale={locale} />
+
+      <style>{`
+        @media (max-width: 768px) {
+          .ud-container { padding: 0 20px; }
+        }
+      `}</style>
     </>
   )
 }
