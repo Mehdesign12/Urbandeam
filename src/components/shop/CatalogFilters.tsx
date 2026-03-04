@@ -1,73 +1,116 @@
 'use client'
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
-type Category = { value: string; label: string }
+type FilterGroup = { label: string; options: string[] }
 
 type Props = {
-  categories: Category[]
+  categories: { value: string; label: string }[]
   activeCategory: string
   locale: string
+  filterOptions?: FilterGroup[]
 }
 
-export default function CatalogFilters({ categories, activeCategory, locale }: Props) {
+export default function CatalogFilters({ locale, filterOptions }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [openFilter, setOpenFilter] = useState<string | null>(null)
 
   const setCategory = useCallback((cat: string) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (cat) {
-      params.set('cat', cat)
-    } else {
-      params.delete('cat')
-    }
+    if (cat) params.set('cat', cat)
+    else params.delete('cat')
     router.push(`${pathname}?${params.toString()}`, { scroll: false })
   }, [router, pathname, searchParams])
 
+  const groups = filterOptions ?? [
+    { label: locale === 'fr' ? 'Disponibilité' : 'Availability', options: [locale === 'fr' ? 'Tous' : 'All', locale === 'fr' ? 'En stock' : 'In stock'] },
+    { label: locale === 'fr' ? 'Prix' : 'Price', options: [locale === 'fr' ? 'Tous les prix' : 'All prices'] },
+  ]
+
+  // Catégories comme filtres rapides
+  const catFilters = [
+    { value: '', label: locale === 'fr' ? 'Tous' : 'All' },
+    { value: 'excel', label: 'Excel' },
+    { value: 'notion', label: 'Notion' },
+    { value: 'pdf', label: 'PDF' },
+  ]
+
+  const activeCat = searchParams.get('cat') ?? ''
+
   return (
-    <div style={{
-      display: 'flex',
-      gap: '6px',
-      flexWrap: 'wrap',
-      marginBottom: '28px',
-    }}>
-      {categories.map(cat => {
-        const isActive = activeCategory === cat.value
-        return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+      {/* Filtres dropdowns style Platsupply */}
+      {groups.map(group => (
+        <div key={group.label} style={{ position: 'relative' }}>
           <button
-            key={cat.value}
-            onClick={() => setCategory(cat.value)}
-            style={{
-              padding: '7px 16px',
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: isActive ? 600 : 400,
-              fontFamily: 'var(--font-sans)',
-              cursor: 'pointer',
-              transition: 'all 150ms ease',
-              border: isActive ? '1px solid var(--color-black)' : '1px solid var(--color-border)',
-              background: isActive ? 'var(--color-black)' : 'white',
-              color: isActive ? 'white' : 'var(--color-secondary)',
-            }}
-            onMouseEnter={e => {
-              if (!isActive) {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-black)'
-                ;(e.currentTarget as HTMLElement).style.color = 'var(--color-black)'
-              }
-            }}
-            onMouseLeave={e => {
-              if (!isActive) {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'
-                ;(e.currentTarget as HTMLElement).style.color = 'var(--color-secondary)'
-              }
-            }}
+            className="ud-catalog__filter-btn"
+            onClick={() => setOpenFilter(openFilter === group.label ? null : group.label)}
           >
-            {cat.label}
+            {group.label}
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+              <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
-        )
-      })}
+          {openFilter === group.label && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 4px)', left: 0,
+              background: 'white', border: '1px solid #E5E5E5',
+              borderRadius: '10px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              minWidth: '160px', overflow: 'hidden', zIndex: 200,
+            }}>
+              {group.options.map(opt => (
+                <button
+                  key={opt}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    padding: '10px 16px', fontSize: '13px', color: '#0A0A0A',
+                    background: 'transparent', border: 'none',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#F5F5F5')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  onClick={() => {
+                    setOpenFilter(null)
+                    // Pour "Price" et catégorie uniquement
+                    if (group.label === 'Prix' || group.label === 'Price') {
+                      const map: Record<string, string> = {
+                        'Excel': 'excel', 'Notion': 'notion', 'PDF': 'pdf',
+                      }
+                      if (map[opt]) setCategory(map[opt])
+                      else setCategory('')
+                    }
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Séparateur + pills catégories */}
+      <div style={{ width: '1px', height: '20px', background: '#E5E5E5', margin: '0 4px' }} />
+      {catFilters.map(cat => (
+        <button
+          key={cat.value}
+          onClick={() => setCategory(cat.value)}
+          style={{
+            padding: '6px 14px', borderRadius: '6px',
+            fontSize: '13px', fontWeight: activeCat === cat.value ? 600 : 400,
+            border: activeCat === cat.value ? '1px solid #0A0A0A' : '1px solid #E5E5E5',
+            background: activeCat === cat.value ? '#0A0A0A' : 'white',
+            color: activeCat === cat.value ? 'white' : '#0A0A0A',
+            cursor: 'pointer', fontFamily: 'inherit',
+            transition: 'all 0.12s',
+          }}
+        >
+          {cat.label}
+        </button>
+      ))}
     </div>
   )
 }

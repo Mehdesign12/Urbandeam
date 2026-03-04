@@ -10,64 +10,50 @@ import Footer from '@/components/layout/Footer'
 import ProductGrid from '@/components/shop/ProductGrid'
 import BuyButton from '@/components/shop/BuyButton'
 import FaqAccordion from '@/components/shop/FaqAccordion'
+import ProductGallery from '@/components/shop/ProductGallery'
+import StickyAddToCart from '@/components/shop/StickyAddToCart'
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>
 }
 
 async function getProduct(slug: string): Promise<Product | null> {
-  const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single()
-  if (error) return null
-  return data
+  try {
+    const supabase = createAdminClient()
+    const { data, error } = await supabase
+      .from('products').select('*')
+      .eq('slug', slug).eq('is_published', true).single()
+    if (error) return null
+    return data
+  } catch { return null }
 }
 
 async function getRelatedProducts(category: string, excludeSlug: string): Promise<Product[]> {
-  const supabase = createAdminClient()
-  const { data } = await supabase
-    .from('products')
-    .select('*')
-    .eq('is_published', true)
-    .eq('category', category)
-    .neq('slug', excludeSlug)
-    .order('sort_order')
-    .limit(4)
-  return data ?? []
+  try {
+    const supabase = createAdminClient()
+    const { data } = await supabase
+      .from('products').select('*')
+      .eq('is_published', true).eq('category', category)
+      .neq('slug', excludeSlug).order('sort_order').limit(4)
+    return data ?? []
+  } catch { return [] }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params
   const product = await getProduct(slug)
   if (!product) return { title: 'Produit introuvable' }
-
   const title = getLocalizedField(product.title, locale as 'fr' | 'en')
   const description = getLocalizedField(product.description, locale as 'fr' | 'en')
-  const price = getPriceDisplay(product.price, product.price_original)
-  const category = CATEGORY_LABELS[product.category] ?? product.category
-
   return {
-    title: `${title} — Template ${category} | Urbandeam`,
+    title: `${title} — Urbandeam`,
     description: description.slice(0, 160),
     openGraph: {
       title: `${title} | Urbandeam`,
       description: description.slice(0, 160),
       images: product.image_url ? [product.image_url] : [],
     },
-    // Schema.org Product via JSON-LD (ajouté dans le composant)
-    other: {
-      'product:price:amount': String(product.price / 100),
-      'product:price:currency': 'EUR',
-    },
   }
-}
-
-const CATEGORY_EMOJI: Record<string, string> = {
-  excel: '📊', notion: '📋', pdf: '📄',
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -83,25 +69,28 @@ export default async function ProductPage({ params }: Props) {
   const price = getPriceDisplay(product.price, product.price_original)
   const categoryLabel = CATEGORY_LABELS[product.category] ?? product.category
 
-  // FAQ selon locale
+  // Simuler plusieurs images (en prod, stocker dans un tableau JSONB)
+  const images = product.image_url
+    ? [product.image_url, product.image_url, product.image_url]
+    : []
+
   const faqItems = isFr ? [
-    { q: 'Comment je reçois mon fichier ?', a: 'Dès que votre paiement est confirmé, vous recevez un email avec le lien de téléchargement. Le fichier est aussi disponible dans votre espace client.' },
-    { q: 'Combien de fois puis-je télécharger ?', a: 'Vous pouvez télécharger votre achat jusqu\'à 5 fois, valable pendant 30 jours après l\'achat.' },
+    { q: 'Comment je reçois mon fichier ?', a: "Dès que votre paiement est confirmé, vous recevez un email avec le lien de téléchargement. Le fichier est aussi disponible dans votre espace client." },
+    { q: 'Combien de fois puis-je télécharger ?', a: "Vous pouvez télécharger votre achat jusqu'à 5 fois, valable pendant 30 jours après l'achat." },
     { q: 'Compatible avec quelle version ?', a: 'Les templates Excel sont compatibles avec Microsoft Excel 2016+ et Google Sheets. Les templates Notion nécessitent un compte Notion (gratuit).' },
-    { q: 'Puis-je être remboursé(e) ?', a: 'Les produits digitaux étant livrés immédiatement, les remboursements sont soumis à notre politique SAV. Contactez-nous dans les 48h si vous rencontrez un problème.' },
+    { q: 'Puis-je être remboursé(e) ?', a: "Les produits digitaux étant livrés immédiatement, les remboursements sont soumis à notre politique SAV. Contactez-nous dans les 48h si vous rencontrez un problème." },
   ] : [
-    { q: 'How do I receive my file?', a: 'As soon as your payment is confirmed, you receive an email with the download link. The file is also available in your account area.' },
+    { q: 'How do I receive my file?', a: 'As soon as your payment is confirmed, you receive an email with the download link.' },
     { q: 'How many times can I download?', a: 'You can download your purchase up to 5 times, valid for 30 days after purchase.' },
     { q: 'Which version is it compatible with?', a: 'Excel templates are compatible with Microsoft Excel 2016+ and Google Sheets. Notion templates require a Notion account (free).' },
     { q: 'Can I get a refund?', a: 'As digital products are delivered immediately, refunds are subject to our support policy. Contact us within 48h if you encounter an issue.' },
   ]
 
-  // JSON-LD Schema.org Product
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: title,
-    description: description,
+    description,
     image: product.image_url ?? undefined,
     brand: { '@type': 'Brand', name: 'Urbandeam' },
     offers: {
@@ -109,211 +98,110 @@ export default async function ProductPage({ params }: Props) {
       price: (product.price / 100).toFixed(2),
       priceCurrency: 'EUR',
       availability: 'https://schema.org/InStock',
-      seller: { '@type': 'Organization', name: 'Urbandeam' },
     },
   }
 
   return (
     <>
       <Navbar locale={locale} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* JSON-LD Schema.org */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <main style={{ background: '#FFFFFF' }}>
+        <div className="ud-detail">
 
-      <main>
-        {/* ── Breadcrumb ── */}
-        <div style={{
-          maxWidth: '1100px',
-          margin: '0 auto',
-          padding: '20px 60px 0',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          fontSize: '12px',
-          color: 'var(--color-muted)',
-        }}>
-          <Link href={`/${locale}`} className="ud-breadcrumb-link">{isFr ? 'Accueil' : 'Home'}</Link>
-          <span>/</span>
-          <Link href={`/${locale}/products`} className="ud-breadcrumb-link">{isFr ? 'Produits' : 'Products'}</Link>
-          <span>/</span>
-          <span style={{ color: 'var(--color-black)' }}>{title}</span>
-        </div>
+          {/* ── Layout 2 colonnes ── */}
+          <div className="ud-detail__grid">
 
-        {/* ── Produit principal ── */}
-        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 60px 80px' }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '60px',
-            alignItems: 'start',
-          }} className="product-detail-grid">
+            {/* ── Galerie images ── */}
+            <ProductGallery images={images} title={title} />
 
-            {/* ── Image ── */}
-            <div>
-              <div style={{
-                position: 'relative',
-                width: '100%',
-                paddingBottom: '100%',
-                background: 'var(--color-card-bg)',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                border: '1px solid var(--color-border)',
-              }}>
-                {product.image_url ? (
-                  <Image
-                    src={product.image_url}
-                    alt={title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    style={{ objectFit: 'cover' }}
-                    priority
-                  />
-                ) : (
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '100px',
-                  }}>
-                    {CATEGORY_EMOJI[product.category] ?? '📦'}
-                  </div>
+            {/* ── Infos produit ── */}
+            <div className="ud-detail__info">
+
+              {/* Titre */}
+              <h1 className="ud-detail__title">{title}</h1>
+
+              {/* Prix */}
+              <div className="ud-detail__price-row">
+                <span className="ud-detail__price">{price.full}</span>
+                {price.isOnSale && price.originalFull && (
+                  <span className="ud-detail__price-original">{price.originalFull}</span>
                 )}
-              </div>
-
-              {/* Trust signals sous l'image */}
-              <div style={{
-                display: 'flex',
-                gap: '16px',
-                marginTop: '20px',
-                padding: '16px 20px',
-                background: 'var(--color-gray-50)',
-                borderRadius: '10px',
-                border: '1px solid var(--color-border)',
-              }} className="trust-grid">
-                {[
-                  { icon: '⚡', text: isFr ? 'Téléchargement immédiat' : 'Instant download' },
-                  { icon: '🔒', text: isFr ? 'Paiement sécurisé' : 'Secure payment' },
-                  { icon: '📥', text: isFr ? '5 téléchargements' : '5 downloads' },
-                ].map(({ icon, text }) => (
-                  <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-secondary)', flex: 1 }}>
-                    <span style={{ fontSize: '14px' }}>{icon}</span>
-                    <span>{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Infos + Achat ── */}
-            <div style={{ position: 'sticky', top: '76px' }}>
-              {/* Badge catégorie */}
-              <div style={{ marginBottom: '12px' }}>
-                <span className={`badge badge-${product.category}`}>{categoryLabel}</span>
                 {price.isOnSale && (
-                  <span className="badge badge-sale" style={{ marginLeft: '6px' }}>
+                  <span className="ud-detail__badge-sale">
                     {isFr ? 'PROMO' : 'SALE'} -{price.discountPercent}%
                   </span>
                 )}
               </div>
 
-              {/* Titre */}
-              <h1 style={{
-                fontFamily: 'var(--font-heading)',
-                fontWeight: 800,
-                fontSize: 'clamp(24px, 3vw, 32px)',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.1,
-                marginBottom: '16px',
-              }}>
-                {title}
-              </h1>
+              {/* Bundle upsell */}
+              {related.length > 0 && (
+                <div className="ud-detail__bundle">
+                  <div className="ud-detail__bundle-img">
+                    {related[0].image_url ? (
+                      <Image src={related[0].image_url} alt="" fill style={{ objectFit: 'cover' }} sizes="48px" />
+                    ) : <span style={{ fontSize: '24px' }}>📦</span>}
+                  </div>
+                  <div>
+                    <p className="ud-detail__bundle-title">
+                      {isFr ? 'Le bundle complet →' : 'The bundle →'}
+                    </p>
+                    <p className="ud-detail__bundle-sub">
+                      {isFr ? 'Économisez en achetant le bundle.' : 'Save money and buy the bundle.'}
+                    </p>
+                  </div>
+                </div>
+              )}
 
-              {/* Description */}
-              <p style={{
-                fontSize: '15px',
-                color: 'var(--color-secondary)',
-                lineHeight: 1.7,
-                marginBottom: '28px',
-              }}>
-                {description}
-              </p>
-
-              {/* Prix */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'baseline',
-                gap: '10px',
-                marginBottom: '24px',
-              }}>
-                <span style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '36px',
-                  fontWeight: 700,
-                  letterSpacing: '-0.02em',
-                  color: 'var(--color-black)',
-                }}>
-                  {price.full}
-                </span>
-                {price.isOnSale && price.originalFull && (
-                  <span style={{
-                    fontSize: '18px',
-                    color: 'var(--color-muted)',
-                    textDecoration: 'line-through',
-                  }}>
-                    {price.originalFull}
-                  </span>
-                )}
-              </div>
-
-              {/* Bouton Acheter */}
+              {/* Bouton Add to cart */}
               <BuyButton
                 productId={product.id}
                 locale={locale}
-                label={isFr ? `Acheter maintenant — ${price.full}` : `Buy now — ${price.full}`}
+                label={isFr ? 'Ajouter au panier' : 'Add to cart'}
+                product={{ id: product.id, slug: product.slug, title, price: product.price, image_url: product.image_url }}
               />
 
-              {/* Séparateur */}
-              <div style={{ borderTop: '1px solid var(--color-gray-100)', margin: '24px 0' }} />
+              {/* More payment options */}
+              <p style={{ textAlign: 'center', marginTop: '12px' }}>
+                <Link href={`/${locale}/checkout`} style={{ fontSize: '13px', color: '#6B7280', textDecoration: 'underline' }}>
+                  {isFr ? "Plus d'options de paiement" : 'More payment options'}
+                </Link>
+              </p>
 
-              {/* Liste des avantages */}
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* Promo / info */}
+              <div className="ud-detail__promo-box">
+                {isFr
+                  ? `Achetez 2 produits ou plus et économisez 20%.`
+                  : 'Buy two or more products and get 20% off.'
+                }
+              </div>
+
+              {/* Description */}
+              <div className="ud-detail__desc-section">
+                {description.split('\n').map((p, i) => (
+                  <p key={i} style={{ fontSize: '14px', color: '#374151', lineHeight: 1.7, marginBottom: '12px' }}>{p}</p>
+                ))}
+              </div>
+
+              {/* Avantages */}
+              <ul className="ud-detail__benefits">
                 {(isFr ? [
                   'Accès immédiat après paiement',
-                  'Fichier téléchargeable 5 fois — valable 30 jours',
-                  'Compatible Excel 2016+, Google Sheets et Notion',
-                  'Support par email inclus',
-                  'Mises à jour gratuites à vie',
+                  '5 téléchargements — valables 30 jours',
+                  'Compatible Excel 2016+, Google Sheets & Notion',
+                  'Support email inclus',
+                  'Mises à jour gratuites',
                 ] : [
                   'Immediate access after payment',
-                  'Downloadable 5 times — valid for 30 days',
-                  'Compatible with Excel 2016+, Google Sheets and Notion',
+                  '5 downloads — valid for 30 days',
+                  'Compatible with Excel 2016+, Google Sheets & Notion',
                   'Email support included',
                   'Free lifetime updates',
                 ]).map(item => (
-                  <li key={item} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    fontSize: '14px',
-                    color: 'var(--color-secondary)',
-                  }}>
-                    <span style={{
-                      width: '18px', height: '18px',
-                      background: 'var(--color-success-bg)',
-                      borderRadius: '50%',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}>
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    </span>
+                  <li key={item} className="ud-detail__benefit-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
                     {item}
                   </li>
                 ))}
@@ -322,36 +210,20 @@ export default async function ProductPage({ params }: Props) {
           </div>
 
           {/* ── FAQ ── */}
-          <div style={{ marginTop: '80px', borderTop: '1px solid var(--color-gray-100)', paddingTop: '60px' }}>
-            <h2 style={{
-              fontFamily: 'var(--font-heading)',
-              fontWeight: 700,
-              fontSize: '24px',
-              letterSpacing: '-0.02em',
-              marginBottom: '32px',
-            }}>
+          <div className="ud-detail__faq">
+            <h2 className="ud-detail__section-title">
               {isFr ? 'Questions fréquentes' : 'Frequently asked questions'}
             </h2>
             <FaqAccordion items={faqItems} />
           </div>
         </div>
 
-        {/* ── Produits liés ── */}
+        {/* ── You may also like ── */}
         {related.length > 0 && (
-          <section style={{
-            background: 'var(--color-gray-50)',
-            borderTop: '1px solid var(--color-border)',
-            padding: '60px 0',
-          }}>
-            <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 60px' }}>
-              <h2 style={{
-                fontFamily: 'var(--font-heading)',
-                fontWeight: 700,
-                fontSize: '22px',
-                letterSpacing: '-0.02em',
-                marginBottom: '24px',
-              }}>
-                {isFr ? 'Vous aimerez aussi' : 'You might also like'}
+          <section className="ud-detail__related">
+            <div className="ud-detail__related-inner">
+              <h2 className="ud-detail__section-title" style={{ marginBottom: '24px' }}>
+                {isFr ? 'Vous aimerez aussi' : 'You may also like'}
               </h2>
               <ProductGrid products={related} locale={locale} columns={4} priorityCount={0} />
             </div>
@@ -359,18 +231,101 @@ export default async function ProductPage({ params }: Props) {
         )}
       </main>
 
+      {/* ── Sticky bar ── */}
+      <StickyAddToCart
+        productId={product.id}
+        slug={product.slug}
+        title={title}
+        price={price.full}
+        priceRaw={product.price}
+        imageUrl={product.image_url}
+        locale={locale}
+        label={isFr ? 'Ajouter au panier' : 'Add to cart'}
+      />
+
       <Footer locale={locale} />
 
       <style>{`
-        .ud-breadcrumb-link {
-          color: var(--color-muted);
-          text-decoration: none;
-          transition: color 0.15s;
+        .ud-detail {
+          max-width: 1280px; margin: 0 auto;
+          padding: 40px 24px 60px;
         }
-        .ud-breadcrumb-link:hover { color: var(--color-black); }
-        @media (max-width: 768px) {
-          .product-detail-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
-          .trust-grid { flex-direction: column; gap: 10px !important; }
+        .ud-detail__grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 64px;
+          align-items: start;
+          margin-bottom: 64px;
+        }
+        .ud-detail__info { position: sticky; top: 80px; }
+        .ud-detail__title {
+          font-size: 24px; font-weight: 700; color: #0A0A0A;
+          line-height: 1.3; margin-bottom: 12px;
+          font-family: var(--font-heading); letter-spacing: -0.02em;
+        }
+        .ud-detail__price-row {
+          display: flex; align-items: baseline; gap: 10px;
+          margin-bottom: 20px;
+        }
+        .ud-detail__price { font-size: 20px; font-weight: 500; color: #0A0A0A; }
+        .ud-detail__price-original { font-size: 16px; color: #9CA3AF; text-decoration: line-through; }
+        .ud-detail__badge-sale {
+          font-size: 11px; font-weight: 700;
+          background: #FEF3C7; color: #92400E;
+          padding: 3px 8px; border-radius: 4px;
+        }
+        .ud-detail__bundle {
+          display: flex; align-items: center; gap: 12px;
+          padding: 14px 16px; background: #F9FAFB;
+          border: 1px solid #E5E7EB; border-radius: 10px;
+          margin-bottom: 20px;
+        }
+        .ud-detail__bundle-img {
+          width: 48px; height: 48px; border-radius: 6px;
+          background: #E5E7EB; flex-shrink: 0;
+          overflow: hidden; position: relative;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .ud-detail__bundle-title { font-size: 13px; font-weight: 600; color: #0A0A0A; }
+        .ud-detail__bundle-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
+        .ud-detail__promo-box {
+          margin: 16px 0; padding: 12px 16px;
+          background: #F9FAFB; border: 1px solid #E5E7EB;
+          border-radius: 8px; font-size: 13px; color: #374151;
+          text-align: center;
+        }
+        .ud-detail__desc-section { margin: 20px 0; }
+        .ud-detail__benefits {
+          list-style: none; display: flex; flex-direction: column; gap: 8px;
+          padding-top: 16px; border-top: 1px solid #F0F0F0;
+        }
+        .ud-detail__benefit-item {
+          display: flex; align-items: center; gap: 10px;
+          font-size: 13px; color: #374151;
+        }
+        .ud-detail__faq {
+          padding-top: 60px; border-top: 1px solid #F0F0F0;
+          max-width: 720px;
+        }
+        .ud-detail__section-title {
+          font-size: 22px; font-weight: 700; color: #0A0A0A;
+          letter-spacing: -0.02em; margin-bottom: 28px;
+          font-family: var(--font-heading);
+        }
+        .ud-detail__related {
+          background: #F9FAFB; padding: 60px 0;
+          border-top: 1px solid #E5E7EB;
+        }
+        .ud-detail__related-inner {
+          max-width: 1280px; margin: 0 auto; padding: 0 24px;
+        }
+
+        @media (max-width: 900px) {
+          .ud-detail__grid { grid-template-columns: 1fr; gap: 32px; }
+          .ud-detail__info { position: static; }
+        }
+        @media (max-width: 640px) {
+          .ud-detail { padding: 24px 16px 80px; }
         }
       `}</style>
     </>

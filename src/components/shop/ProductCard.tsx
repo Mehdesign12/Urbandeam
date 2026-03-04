@@ -4,7 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Product } from '@/types'
-import { getLocalizedField, getPriceDisplay, CATEGORY_LABELS } from '@/lib/utils'
+import { getLocalizedField, getPriceDisplay } from '@/lib/utils'
+import { useCart } from './CartContext'
 
 type Props = {
   product: Product
@@ -12,166 +13,172 @@ type Props = {
   priority?: boolean
 }
 
-// Emoji placeholder selon la catégorie
 const CATEGORY_EMOJI: Record<string, string> = {
-  excel: '📊',
-  notion: '📋',
-  pdf: '📄',
+  excel: '📊', notion: '📋', pdf: '📄',
 }
 
 export default function ProductCard({ product, locale, priority = false }: Props) {
   const [hovered, setHovered] = useState(false)
-  const [addedToCart, setAddedToCart] = useState(false)
+  const { addItem } = useCart()
 
   const title = getLocalizedField(product.title, locale as 'fr' | 'en', product.slug)
   const price = getPriceDisplay(product.price, product.price_original)
-  const categoryLabel = CATEGORY_LABELS[product.category] ?? product.category
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setAddedToCart(true)
-    setTimeout(() => setAddedToCart(false), 1500)
+    addItem({
+      id: product.id,
+      slug: product.slug,
+      title,
+      price: product.price,
+      image_url: product.image_url,
+      locale,
+    })
   }
 
   return (
     <Link
       href={`/${locale}/products/${product.slug}`}
-      style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+      className="ud-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <article style={{
-        background: 'white',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        transition: 'transform 200ms ease, box-shadow 200ms ease',
-        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: hovered ? 'var(--shadow-md)' : 'var(--shadow-sm)',
-        cursor: 'pointer',
-        border: '1px solid var(--color-border)',
-      }}>
-
-        {/* ── Image zone 1:1 ── */}
-        <div style={{
-          position: 'relative',
-          width: '100%',
-          paddingBottom: '100%', // ratio 1:1
-          background: 'var(--color-card-bg)',
-          overflow: 'hidden',
-        }}>
-          {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={title}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 22vw"
-              style={{ objectFit: 'cover', transition: 'transform 300ms ease', transform: hovered ? 'scale(1.03)' : 'scale(1)' }}
-              priority={priority}
-            />
-          ) : (
-            /* Placeholder emoji centré */
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '52px',
-            }}>
-              {CATEGORY_EMOJI[product.category] ?? '📦'}
-            </div>
-          )}
-
-          {/* ── Badges ── */}
-          <div style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            display: 'flex',
-            gap: '4px',
-            flexWrap: 'wrap',
-          }}>
-            {price.isOnSale && (
-              <span className="badge badge-sale">
-                {locale === 'fr' ? 'PROMO' : 'SALE'}
-              </span>
-            )}
-            <span className={`badge badge-${product.category}`}>
-              {categoryLabel}
-            </span>
-          </div>
-
-          {/* ── Add to cart btn (cercle bas-droit) ── */}
-          <button
-            onClick={handleAddToCart}
-            aria-label="Ajouter au panier"
+      {/* ── Image zone ── */}
+      <div className="ud-card__img-wrap">
+        {product.image_url ? (
+          <Image
+            src={product.image_url}
+            alt={title}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 22vw"
             style={{
-              position: 'absolute',
-              bottom: '10px',
-              right: '10px',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: addedToCart ? 'var(--color-success)' : 'white',
-              border: 'none',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'transform 150ms ease, background 200ms ease',
-              transform: hovered ? 'scale(1.1)' : 'scale(1)',
-              zIndex: 1,
+              objectFit: 'cover',
+              transition: 'transform 400ms ease',
+              transform: hovered ? 'scale(1.04)' : 'scale(1)',
             }}
-          >
-            {addedToCart ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            ) : (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {/* ── Info produit ── */}
-        <div style={{ padding: '12px 14px 14px' }}>
-          <h3 style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '13px',
-            fontWeight: 500,
-            color: 'var(--color-black)',
-            lineHeight: 1.4,
-            marginBottom: '6px',
-            // Tronquer à 2 lignes
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          } as React.CSSProperties}>
-            {title}
-          </h3>
-
-          {/* Prix */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '13px', color: 'var(--color-black)', fontWeight: 500 }}>
-              {price.full}
-            </span>
-            {price.isOnSale && price.originalFull && (
-              <span style={{
-                fontSize: '12px',
-                color: 'var(--color-muted)',
-                textDecoration: 'line-through',
-              }}>
-                {price.originalFull}
-              </span>
-            )}
+            priority={priority}
+          />
+        ) : (
+          <div className="ud-card__placeholder">
+            {CATEGORY_EMOJI[product.category] ?? '📦'}
           </div>
+        )}
+
+        {/* Flèches navigation (hover) */}
+        {hovered && (
+          <>
+            <button className="ud-card__arrow ud-card__arrow--left" onClick={e => e.preventDefault()} aria-label="Précédent">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+            <button className="ud-card__arrow ud-card__arrow--right" onClick={e => e.preventDefault()} aria-label="Suivant">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Badge promo */}
+        {price.isOnSale && (
+          <span className="ud-card__badge">
+            -{price.discountPercent}%
+          </span>
+        )}
+
+        {/* Bouton add to cart (bas droit) */}
+        <button
+          className={`ud-card__cart-btn${hovered ? ' ud-card__cart-btn--visible' : ''}`}
+          onClick={handleAddToCart}
+          aria-label="Ajouter au panier"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* ── Infos sous l'image ── */}
+      <div className="ud-card__info">
+        <h3 className="ud-card__title">{title}</h3>
+        <div className="ud-card__prices">
+          <span className="ud-card__price">{price.full}</span>
+          {price.isOnSale && price.originalFull && (
+            <span className="ud-card__price-original">{price.originalFull}</span>
+          )}
         </div>
-      </article>
+      </div>
+
+      <style>{`
+        .ud-card {
+          display: block; text-decoration: none; color: inherit;
+        }
+        .ud-card__img-wrap {
+          position: relative;
+          width: 100%; padding-bottom: 100%;
+          background: #EFEFEF;
+          border-radius: 12px;
+          overflow: hidden;
+          margin-bottom: 12px;
+        }
+        .ud-card__placeholder {
+          position: absolute; inset: 0;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 56px;
+        }
+        .ud-card__arrow {
+          position: absolute; top: 50%; transform: translateY(-50%);
+          width: 28px; height: 28px; border-radius: 50%;
+          background: white; border: none; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.15); z-index: 2;
+          color: #0A0A0A; transition: background 0.1s;
+        }
+        .ud-card__arrow:hover { background: #F5F5F5; }
+        .ud-card__arrow--left { left: 8px; }
+        .ud-card__arrow--right { right: 8px; }
+        .ud-card__badge {
+          position: absolute; top: 10px; left: 10px;
+          background: #0A0A0A; color: white;
+          font-size: 10px; font-weight: 700;
+          padding: 3px 8px; border-radius: 4px;
+          letter-spacing: 0.05em;
+          z-index: 2;
+        }
+        .ud-card__cart-btn {
+          position: absolute; bottom: 10px; right: 10px;
+          width: 36px; height: 36px; border-radius: 50%;
+          background: white; border: none; cursor: pointer;
+          display: flex; align-items: center; justify-content: center; gap: 1px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          color: #0A0A0A; z-index: 2;
+          opacity: 0; transform: scale(0.8);
+          transition: opacity 0.15s, transform 0.15s;
+        }
+        .ud-card__cart-btn--visible {
+          opacity: 1; transform: scale(1);
+        }
+        .ud-card__cart-btn:hover { background: #0A0A0A; color: white; }
+        .ud-card__info { padding: 0 2px; }
+        .ud-card__title {
+          font-size: 14px; font-weight: 400; color: #0A0A0A;
+          line-height: 1.4; margin-bottom: 4px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .ud-card__prices { display: flex; align-items: center; gap: 6px; }
+        .ud-card__price { font-size: 14px; color: #0A0A0A; font-weight: 400; }
+        .ud-card__price-original {
+          font-size: 13px; color: #9CA3AF; text-decoration: line-through;
+        }
+      `}</style>
     </Link>
   )
 }

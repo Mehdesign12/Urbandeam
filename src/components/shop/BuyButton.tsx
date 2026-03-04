@@ -1,70 +1,77 @@
 'use client'
 
 import { useState } from 'react'
+import { useCart } from './CartContext'
+
+type CartProduct = {
+  id: string
+  slug: string
+  title: string
+  price: number
+  image_url?: string | null
+}
 
 type Props = {
   productId: string
   locale: string
   label: string
+  product?: CartProduct
 }
 
-export default function BuyButton({ productId, locale, label }: Props) {
-  const [loading, setLoading] = useState(false)
+export default function BuyButton({ productId, locale, label, product }: Props) {
+  const [added, setAdded] = useState(false)
+  const { addItem } = useCart()
 
-  const handleBuy = async () => {
-    setLoading(true)
-    try {
-      // Phase 3 : appel API Stripe checkout
-      // Pour l'instant, placeholder
-      alert(locale === 'fr'
-        ? 'Paiement Stripe disponible en Phase 3 !'
-        : 'Stripe payment coming in Phase 3!')
-    } finally {
-      setLoading(false)
+  const handleClick = () => {
+    if (product) {
+      addItem({ ...product, locale })
+      setAdded(true)
+      setTimeout(() => setAdded(false), 2000)
     }
   }
 
   return (
     <button
-      onClick={handleBuy}
-      disabled={loading}
-      style={{
-        width: '100%',
-        padding: '15px 24px',
-        background: loading ? 'var(--color-secondary)' : 'var(--color-black)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        fontSize: '15px',
-        fontWeight: 600,
-        fontFamily: 'var(--font-sans)',
-        cursor: loading ? 'wait' : 'pointer',
-        letterSpacing: '-0.01em',
-        transition: 'opacity 150ms ease',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-      }}
-      onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+      onClick={handleClick}
+      className={`ud-buy-btn${added ? ' ud-buy-btn--added' : ''}`}
     >
-      {loading ? (
+      {added ? (
         <>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
-            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
           </svg>
-          {locale === 'fr' ? 'Chargement...' : 'Loading...'}
+          {locale === 'fr' ? 'Ajouté !' : 'Added!'}
         </>
       ) : (
         <>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
           </svg>
           {label}
         </>
       )}
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        .ud-buy-btn {
+          width: 100%;
+          padding: 15px 24px;
+          background: #0A0A0A;
+          color: white;
+          border: none;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 600;
+          font-family: inherit;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: opacity 0.15s, background 0.15s;
+          margin-bottom: 0;
+        }
+        .ud-buy-btn:hover { opacity: 0.85; }
+        .ud-buy-btn--added { background: #10B981; }
+      `}</style>
     </button>
   )
 }
