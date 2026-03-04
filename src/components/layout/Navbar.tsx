@@ -48,7 +48,7 @@ export default function Navbar({ locale }: { locale: string }) {
               alt="Urbandeam"
               width={140}
               height={36}
-              style={{ objectFit: 'contain', height: '32px', width: 'auto' }}
+              style={{ objectFit: 'contain', height: '22px', width: 'auto' }}
               priority
             />
           </Link>
@@ -212,7 +212,7 @@ export default function Navbar({ locale }: { locale: string }) {
           border-radius: 6px;
           transition: background 0.12s;
         }
-        .ud-nav__link:hover { background: #F5F5F5; }
+        .ud-nav__link:hover { background: transparent; color: #555; }
         .ud-nav__link--active { font-weight: 500; }
 
         .ud-nav__right { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
@@ -223,7 +223,7 @@ export default function Navbar({ locale }: { locale: string }) {
           padding: 6px 10px; border-radius: 6px;
           font-family: inherit; transition: background 0.12s;
         }
-        .ud-nav__currency:hover { background: #F5F5F5; }
+        .ud-nav__currency:hover { background: transparent; color: #555; }
         .ud-nav__icon {
           display: flex; align-items: center; justify-content: center;
           width: 36px; height: 36px; border-radius: 6px;
@@ -231,7 +231,7 @@ export default function Navbar({ locale }: { locale: string }) {
           background: transparent; border: none; cursor: pointer;
           transition: background 0.12s; position: relative;
         }
-        .ud-nav__icon:hover { background: #F5F5F5; }
+        .ud-nav__icon:hover { background: transparent; color: #555; }
         .ud-nav__cart { position: relative; }
         .ud-nav__cart-badge {
           position: absolute; top: 2px; right: 2px;
@@ -246,7 +246,7 @@ export default function Navbar({ locale }: { locale: string }) {
           width: 36px; height: 36px; background: transparent;
           border: none; cursor: pointer; color: #0A0A0A; border-radius: 6px;
         }
-        .ud-nav__burger:hover { background: #F5F5F5; }
+        .ud-nav__burger:hover { background: transparent; color: #555; }
 
         /* Dropdown currency */
         .ud-dropdown {
