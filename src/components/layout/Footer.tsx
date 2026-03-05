@@ -23,9 +23,11 @@ export default function Footer({ locale }: { locale: string }) {
   ]
 
   const legalLinks = [
-    { href: `/${locale}/privacy`, label: isFr ? 'Politique de confidentialité' : 'Privacy policy' },
-    { href: `/${locale}/terms`, label: isFr ? 'CGV' : 'Terms of service' },
-    { href: `/${locale}/refund`, label: isFr ? 'Remboursements' : 'Refund policy' },
+    { href: `/${locale}/terms`, label: isFr ? 'CGV' : 'Terms & Conditions' },
+    { href: `/${locale}/privacy`, label: isFr ? 'Confidentialité' : 'Privacy Policy' },
+    { href: `/${locale}/refund`, label: isFr ? 'Remboursements' : 'Refund Policy' },
+    { href: `/${locale}/legal-notice`, label: isFr ? 'Mentions légales' : 'Legal Notice' },
+    { href: `/${locale}/terms-of-use`, label: isFr ? 'Conditions d\'utilisation' : 'Terms of Use' },
   ]
 
   return (

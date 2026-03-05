@@ -1,9 +1,9 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
-const FROM = process.env.RESEND_FROM_EMAIL ?? 'noreply@urbandeam.com'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://urbandeam.vercel.app'
+// Ne pas instancier au module level — la clé n'est pas disponible au build time.
+// Resend est créé lazily dans sendConfirmationEmail().
+const FROM    = process.env.RESEND_FROM_EMAIL     ?? 'noreply@urbandeam.com'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL   ?? 'https://urbandeam.vercel.app'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type ConfirmationEmailParams = {
@@ -268,6 +268,14 @@ export async function sendConfirmationEmail(
   params: ConfirmationEmailParams
 ): Promise<{ success: boolean; error?: string }> {
   const fr = params.locale === 'fr'
+
+  // Instanciation lazy : la clé est disponible à l'exécution (pas au build)
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    console.error('[Resend] RESEND_API_KEY manquante — email non envoyé')
+    return { success: false, error: 'RESEND_API_KEY not configured' }
+  }
+  const resend = new Resend(apiKey)
 
   try {
     const { data, error } = await resend.emails.send({
