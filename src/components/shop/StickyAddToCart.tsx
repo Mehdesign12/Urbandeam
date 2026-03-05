@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useCart } from './CartContext'
+import BuyButton from './BuyButton'
 
 type Props = {
   productId: string
@@ -15,9 +15,8 @@ type Props = {
   label: string
 }
 
-export default function StickyAddToCart({ productId, slug, title, price, priceRaw, imageUrl, locale, label }: Props) {
+export default function StickyAddToCart({ productId, slug, title, price, imageUrl, locale, label }: Props) {
   const [visible, setVisible] = useState(false)
-  const { addItem } = useCart()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,10 +25,6 @@ export default function StickyAddToCart({ productId, slug, title, price, priceRa
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
-  const handleAdd = () => {
-    addItem({ id: productId, slug, title, price: priceRaw, image_url: imageUrl, locale })
-  }
 
   return (
     <>
@@ -48,12 +43,14 @@ export default function StickyAddToCart({ productId, slug, title, price, priceRa
               <p className="ud-sticky__price">{price}</p>
             </div>
           </div>
-          <button className="ud-sticky__btn" onClick={handleAdd}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-            {label}
-          </button>
+          {/* Réutilise BuyButton qui gère la modal complète */}
+          <div style={{ flexShrink: 0, minWidth: 180 }}>
+            <BuyButton
+              productId={productId}
+              locale={locale}
+              label={label}
+            />
+          </div>
         </div>
       </div>
 
@@ -74,7 +71,7 @@ export default function StickyAddToCart({ productId, slug, title, price, priceRa
           justify-content: space-between; gap: 16px;
         }
         .ud-sticky__left {
-          display: flex; align-items: center; gap: 12px; min-width: 0;
+          display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;
         }
         .ud-sticky__img {
           width: 48px; height: 48px; border-radius: 8px;
@@ -87,18 +84,10 @@ export default function StickyAddToCart({ productId, slug, title, price, priceRa
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .ud-sticky__price { font-size: 13px; color: #6B7280; margin-top: 2px; }
-        .ud-sticky__btn {
-          display: flex; align-items: center; gap: 8px;
-          padding: 11px 24px; background: #0A0A0A; color: white;
-          border: none; border-radius: 10px; font-size: 14px;
-          font-weight: 600; cursor: pointer; white-space: nowrap;
-          font-family: inherit; transition: opacity 0.15s; flex-shrink: 0;
-        }
-        .ud-sticky__btn:hover { opacity: 0.85; }
 
         @media (max-width: 640px) {
           .ud-sticky__inner { padding: 12px 16px; }
-          .ud-sticky__title { display: none; }
+          .ud-sticky__left { display: none; }
         }
       `}</style>
     </>
