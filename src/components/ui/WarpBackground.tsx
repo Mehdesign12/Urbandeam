@@ -1,196 +1,151 @@
-'use client'
+"use client"
 
-import React, { CSSProperties } from 'react'
+import React, { HTMLAttributes, useCallback, useMemo } from "react"
+import { motion } from "motion/react"
+import { cn } from "@/lib/utils"
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface WarpBackgroundProps {
-  children?: React.ReactNode
-  /** Nombre de faisceaux par côté (haut + gauche) */
-  beamsPerSide?: number
-  /** Taille de chaque faisceau (% de la dimension) */
-  beamSize?: number
-  /** Durée de l'animation en secondes */
-  beamDuration?: number
-  /** Délai max aléatoire entre chaque faisceau (secondes) */
-  beamDelayMax?: number
-  /** Délai min */
-  beamDelayMin?: number
-  /** Perspective CSS (px) */
+interface WarpBackgroundProps extends HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode
   perspective?: number
-  /** Couleur des lignes de grille */
+  beamsPerSide?: number
+  beamSize?: number
+  beamDelayMax?: number
+  beamDelayMin?: number
+  beamDuration?: number
   gridColor?: string
-  /** Couleur des faisceaux */
-  beamColor?: string
-  className?: string
-  style?: CSSProperties
 }
 
-// ─── Génère un tableau d'entiers de 0 à n-1 ──────────────────────────────────
-function range(n: number): number[] {
-  return Array.from({ length: n }, (_, i) => i)
-}
-
-// ─── Un seul faisceau (top ou left) ──────────────────────────────────────────
-function Beam({
-  direction,
-  index,
-  beamSize,
+const Beam = ({
+  width,
+  x,
+  delay,
   duration,
-  delayMax,
-  delayMin,
-  beamColor,
 }: {
-  direction: 'top' | 'left'
-  index: number
-  beamSize: number
+  width: string | number
+  x: string | number
+  delay: number
   duration: number
-  delayMax: number
-  delayMin: number
-  beamColor: string
-}) {
-  // Délai pseudo-aléatoire déterministe basé sur index + direction
-  const seed = direction === 'top' ? index * 7.3 : index * 5.7 + 100
-  const delay = delayMin + ((seed * 1.618) % (delayMax - delayMin))
-
-  const pos = `${index * beamSize + beamSize / 2}%`
-
-  const baseStyle: CSSProperties = {
-    position: 'absolute',
-    background: `linear-gradient(to bottom, ${beamColor}, transparent)`,
-    animationName: direction === 'top' ? 'warp-beam-top' : 'warp-beam-left',
-    animationDuration: `${duration}s`,
-    animationDelay: `${delay}s`,
-    animationTimingFunction: 'linear',
-    animationIterationCount: 'infinite',
-    opacity: 0,
-    pointerEvents: 'none',
-    zIndex: 1,
-  }
-
-  if (direction === 'top') {
-    return (
-      <div
-        style={{
-          ...baseStyle,
-          left: pos,
-          top: 0,
-          width: '2px',
-          height: '30%',
-          transform: 'translateX(-50%)',
-          background: `linear-gradient(to bottom, transparent, ${beamColor}, transparent)`,
-        }}
-      />
-    )
-  }
+}) => {
+  const hue = Math.floor(Math.random() * 360)
+  const ar = Math.floor(Math.random() * 10) + 1
 
   return (
-    <div
-      style={{
-        ...baseStyle,
-        top: pos,
-        left: 0,
-        width: '30%',
-        height: '2px',
-        transform: 'translateY(-50%)',
-        background: `linear-gradient(to right, transparent, ${beamColor}, transparent)`,
+    <motion.div
+      style={
+        {
+          "--x": `${x}`,
+          "--width": `${width}`,
+          "--aspect-ratio": `${ar}`,
+          "--background": `linear-gradient(hsl(${hue} 80% 60%), transparent)`,
+        } as React.CSSProperties
+      }
+      className={`absolute top-0 left-[var(--x)] [aspect-ratio:1/var(--aspect-ratio)] [width:var(--width)] [background:var(--background)]`}
+      initial={{ y: "100cqmax", x: "-50%" }}
+      animate={{ y: "-100%", x: "-50%" }}
+      transition={{
+        duration,
+        delay,
+        repeat: Infinity,
+        ease: "linear",
       }}
     />
   )
 }
 
-// ─── Composant principal ──────────────────────────────────────────────────────
-export function WarpBackground({
+export const WarpBackground: React.FC<WarpBackgroundProps> = ({
   children,
-  beamsPerSide = 4,
-  beamSize = 10,
-  beamDuration = 4,
+  perspective = 100,
+  className,
+  beamsPerSide = 3,
+  beamSize = 5,
   beamDelayMax = 3,
   beamDelayMin = 0,
-  perspective = 200,
-  gridColor = 'rgba(255,255,255,0.06)',
-  beamColor = 'rgba(255,255,255,0.5)',
-  className = '',
-  style,
-}: WarpBackgroundProps) {
-  const gridSize = `${beamSize}%`
+  beamDuration = 3,
+  gridColor = "rgba(255,255,255,0.08)",
+  ...props
+}) => {
+  const generateBeams = useCallback(() => {
+    const beams = []
+    const cellsPerSide = Math.floor(100 / beamSize)
+    const step = cellsPerSide / beamsPerSide
+
+    for (let i = 0; i < beamsPerSide; i++) {
+      const x = Math.floor(i * step)
+      const delay = Math.random() * (beamDelayMax - beamDelayMin) + beamDelayMin
+      beams.push({ x, delay })
+    }
+    return beams
+  }, [beamsPerSide, beamSize, beamDelayMax, beamDelayMin])
+
+  const topBeams = useMemo(() => generateBeams(), [generateBeams])
+  const rightBeams = useMemo(() => generateBeams(), [generateBeams])
+  const bottomBeams = useMemo(() => generateBeams(), [generateBeams])
+  const leftBeams = useMemo(() => generateBeams(), [generateBeams])
 
   return (
-    <>
-      {/* Keyframes injectés une seule fois */}
-      <style>{`
-        @keyframes warp-beam-top {
-          0%   { opacity: 0; transform: translateX(-50%) translateY(-100%); }
-          10%  { opacity: 1; }
-          90%  { opacity: 1; }
-          100% { opacity: 0; transform: translateX(-50%) translateY(500%); }
-        }
-        @keyframes warp-beam-left {
-          0%   { opacity: 0; transform: translateY(-50%) translateX(-100%); }
-          10%  { opacity: 1; }
-          90%  { opacity: 1; }
-          100% { opacity: 0; transform: translateY(-50%) translateX(500%); }
-        }
-      `}</style>
-
+    <div className={cn("relative", className)} {...props}>
       <div
-        className={`ud-warp ${className}`}
-        style={{
-          position: 'relative',
-          overflow: 'hidden',
-          ...style,
-        }}
+        style={
+          {
+            "--perspective": `${perspective}px`,
+            "--grid-color": gridColor,
+            "--beam-size": `${beamSize}%`,
+          } as React.CSSProperties
+        }
+        className={
+          "[container-type:size] pointer-events-none absolute top-0 left-0 size-full overflow-hidden [clipPath:inset(0)] [perspective:var(--perspective)] [transform-style:preserve-3d]"
+        }
       >
-        {/* ── Grille perspective ── */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `
-              linear-gradient(${gridColor} 1px, transparent 1px),
-              linear-gradient(90deg, ${gridColor} 1px, transparent 1px)
-            `,
-            backgroundSize: `${gridSize} ${gridSize}`,
-            // Perspective : le bas de la grille semble plus loin
-            transform: `perspective(${perspective}px) rotateX(0deg)`,
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* ── Faisceaux verticaux (top) ── */}
-        {range(beamsPerSide).map((i) => (
-          <Beam
-            key={`top-${i}`}
-            direction="top"
-            index={i}
-            beamSize={100 / beamsPerSide}
-            duration={beamDuration}
-            delayMax={beamDelayMax}
-            delayMin={beamDelayMin}
-            beamColor={beamColor}
-          />
-        ))}
-
-        {/* ── Faisceaux horizontaux (left) ── */}
-        {range(beamsPerSide).map((i) => (
-          <Beam
-            key={`left-${i}`}
-            direction="left"
-            index={i}
-            beamSize={100 / beamsPerSide}
-            duration={beamDuration}
-            delayMax={beamDelayMax}
-            delayMin={beamDelayMin}
-            beamColor={beamColor}
-          />
-        ))}
-
-        {/* ── Contenu ── */}
-        <div style={{ position: 'relative', zIndex: 2 }}>
-          {children}
+        {/* top side */}
+        <div className="[container-type:inline-size] absolute z-20 [height:100cqmax] [width:100cqi] [transform-origin:50%_0%] [transform:rotateX(-90deg)] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [transform-style:preserve-3d]">
+          {topBeams.map((beam, index) => (
+            <Beam
+              key={`top-${index}`}
+              width={`${beamSize}%`}
+              x={`${beam.x * beamSize}%`}
+              delay={beam.delay}
+              duration={beamDuration}
+            />
+          ))}
+        </div>
+        {/* bottom side */}
+        <div className="[container-type:inline-size] absolute top-full [height:100cqmax] [width:100cqi] [transform-origin:50%_0%] [transform:rotateX(-90deg)] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [transform-style:preserve-3d]">
+          {bottomBeams.map((beam, index) => (
+            <Beam
+              key={`bottom-${index}`}
+              width={`${beamSize}%`}
+              x={`${beam.x * beamSize}%`}
+              delay={beam.delay}
+              duration={beamDuration}
+            />
+          ))}
+        </div>
+        {/* left side */}
+        <div className="[container-type:inline-size] absolute top-0 left-0 [height:100cqmax] [width:100cqh] [transform-origin:0%_0%] [transform:rotate(90deg)_rotateX(-90deg)] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [transform-style:preserve-3d]">
+          {leftBeams.map((beam, index) => (
+            <Beam
+              key={`left-${index}`}
+              width={`${beamSize}%`}
+              x={`${beam.x * beamSize}%`}
+              delay={beam.delay}
+              duration={beamDuration}
+            />
+          ))}
+        </div>
+        {/* right side */}
+        <div className="[container-type:inline-size] absolute top-0 right-0 [height:100cqmax] [width:100cqh] [transform-origin:100%_0%] [transform:rotate(-90deg)_rotateX(-90deg)] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [transform-style:preserve-3d]">
+          {rightBeams.map((beam, index) => (
+            <Beam
+              key={`right-${index}`}
+              width={`${beamSize}%`}
+              x={`${beam.x * beamSize}%`}
+              delay={beam.delay}
+              duration={beamDuration}
+            />
+          ))}
         </div>
       </div>
-    </>
+      <div className="relative">{children}</div>
+    </div>
   )
 }

@@ -70,22 +70,19 @@ export default async function HomePage({ params }: Props) {
 
       <main>
         {/* ═══════════════════════════════════════
-            HERO — WarpBackground
+            HERO — WarpBackground (Magic UI)
         ═══════════════════════════════════════ */}
         <WarpBackground
-          beamsPerSide={5}
-          beamSize={10}
-          beamDuration={4}
-          beamDelayMax={4}
-          beamDelayMin={0.5}
-          perspective={150}
-          gridColor="rgba(255,255,255,0.055)"
-          beamColor="rgba(255,255,255,0.55)"
+          beamsPerSide={4}
+          beamSize={5}
+          beamDuration={3}
+          beamDelayMax={3}
+          beamDelayMin={0}
+          perspective={100}
+          gridColor="rgba(255,255,255,0.07)"
           className="ud-hero"
         >
-          <div className="ud-hero__deco" />
-
-          <div className="ud-container">
+          <div className="ud-container ud-hero__content">
             <div className="ud-hero__badge">
               <span className="ud-hero__dot">●</span>
               {isFr ? '3 nouveaux templates disponibles' : '3 new templates available'}
@@ -236,17 +233,20 @@ export default async function HomePage({ params }: Props) {
         @media (min-width: 1024px) { .ud-container { padding: 0 48px; } }
 
         /* ── HERO ── */
+        /* WarpBackground gère position:relative + overflow:hidden */
         .ud-hero {
-          background: var(--color-black);
+          background: #0A0A0A !important;
           color: white;
-          padding: 48px 0 40px;
-          position: relative;
-          overflow: hidden;
           width: 100%;
         }
-        @media (min-width: 768px) { .ud-hero { padding: 72px 0 60px; } }
-
-        .ud-hero__deco { display: none; }
+        /* Padding via ud-hero__content pour ne pas interférer avec WarpBackground */
+        .ud-hero__content {
+          padding-top: 52px;
+          padding-bottom: 44px;
+        }
+        @media (min-width: 768px) {
+          .ud-hero__content { padding-top: 80px; padding-bottom: 68px; }
+        }
         .ud-hero__badge {
           display: inline-flex; align-items: center; gap: 6px;
           background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
