@@ -22,14 +22,25 @@ type ProductInfo = {
   slug: string
 }
 
+// CartItem minimal passé depuis le Cart (infos déjà disponibles côté client)
+export type CartItemPayload = {
+  id: string
+  title: string
+  price: number
+  image_url?: string | null
+}
+
 type Props = {
-  productId: string
+  productId?: string           // mode produit unique (Buy Now)
+  cartItems?: CartItemPayload[] // mode panier (plusieurs produits)
   locale: string
   label: string
   _autoOpen?: boolean
   _onAutoClose?: () => void
-  _nextProduct?: ProductInfo | null   // produit suivant dans la queue
-  _onNext?: () => void                // callback pour passer au suivant
+  /** @deprecated — plus utilisé, remplacé par SuccessScreenMulti */
+  _nextProduct?: never
+  /** @deprecated — plus utilisé, remplacé par SuccessScreenMulti */
+  _onNext?: never
 }
 
 // ─── CSS global injecté une seule fois ────────────────────────────────────────
@@ -170,14 +181,16 @@ const MODAL_CSS = `
     font-size: 12px; color: #6B7280;
   }
 
+  .udm-recap-list { margin-bottom: 14px; }
   .udm-recap {
     display: flex; align-items: center; gap: 12px;
     padding: 13px 14px;
     background: #F9FAFB;
     border-radius: 12px;
     border: 1px solid #E5E7EB;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
   }
+  .udm-recap:last-child { margin-bottom: 0; }
   .udm-recap-img {
     width: 50px; height: 50px;
     border-radius: 8px; object-fit: cover; flex-shrink: 0;
@@ -188,6 +201,13 @@ const MODAL_CSS = `
     margin: 0 0 2px;
   }
   .udm-recap-price { font-size: 13px; color: #6B7280; margin: 0; }
+  .udm-recap-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px 0;
+    border-top: 1px solid #E5E7EB;
+    margin-top: 8px;
+    font-size: 14px; color: #6B7280;
+  }
 
   .udm-email-chip {
     display: flex; align-items: center; gap: 7px;
@@ -286,13 +306,13 @@ function Spinner() {
 
 // ─── Formulaire de paiement ────────────────────────────────────────────────────
 function PaymentForm({
-  paymentIntentId, product, locale, email, onSuccess,
+  paymentIntentId, products, locale, email, onSuccess,
 }: {
   paymentIntentId: string
-  product: ProductInfo
+  products: ProductInfo[]   // un ou plusieurs produits
   locale: string
   email: string
-  onSuccess: (token: string) => void
+  onSuccess: (tokens: Array<{productId: string; token: string}>) => void
 }) {
   const stripe   = useStripe()
   const elements = useElements()
@@ -302,6 +322,8 @@ function PaymentForm({
 
   const fmt = (cents: number) =>
     (cents / 100).toLocaleString(fr ? 'fr-FR' : 'en-US', { style: 'currency', currency: 'EUR' })
+
+  const total = products.reduce((s, p) => s + p.price, 0)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -329,7 +351,15 @@ function PaymentForm({
           body: JSON.stringify({ paymentIntentId }),
         })
         const data = await res.json()
-        if (data.downloadToken) { onSuccess(data.downloadToken); return }
+        // Support multi-tokens (panier) et mono-token (Buy Now)
+        if (data.downloadTokens && data.downloadTokens.length > 0) {
+          onSuccess(data.downloadTokens)
+          return
+        }
+        if (data.downloadToken) {
+          onSuccess([{ productId: products[0]?.id ?? '', token: data.downloadToken }])
+          return
+        }
         setErr(fr ? 'Commande enregistrée — vérifiez votre email.' : 'Order saved — check your email.')
       } catch {
         setErr(fr ? 'Paiement reçu — vérifiez votre email.' : 'Payment received — check your email.')
@@ -340,15 +370,26 @@ function PaymentForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Récap produit */}
-      <div className="udm-recap">
-        {product.image_url && (
-          <img src={product.image_url} alt={product.title} className="udm-recap-img" />
+      {/* Récap produit(s) */}
+      <div className="udm-recap-list">
+        {products.map((product) => (
+          <div key={product.id} className="udm-recap">
+            {product.image_url && (
+              <img src={product.image_url} alt={product.title} className="udm-recap-img" />
+            )}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p className="udm-recap-title">{product.title}</p>
+              <p className="udm-recap-price">{fmt(product.price)}</p>
+            </div>
+          </div>
+        ))}
+        {/* Total si plusieurs produits */}
+        {products.length > 1 && (
+          <div className="udm-recap-total">
+            <span>{fr ? 'Total' : 'Total'}</span>
+            <span style={{ fontWeight: 700, color: '#0A0A0A' }}>{fmt(total)}</span>
+          </div>
         )}
-        <div style={{ minWidth: 0 }}>
-          <p className="udm-recap-title">{product.title}</p>
-          <p className="udm-recap-price">{fmt(product.price)}</p>
-        </div>
       </div>
 
       {/* Email */}
@@ -373,7 +414,7 @@ function PaymentForm({
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
             </svg>
-            {fr ? `Payer ${fmt(product.price)}` : `Pay ${fmt(product.price)}`}
+            {fr ? `Payer ${fmt(total)}` : `Pay ${fmt(total)}`}
           </>
         )}
       </button>
@@ -388,92 +429,23 @@ function PaymentForm({
   )
 }
 
-// ─── Écran succès ──────────────────────────────────────────────────────────────
-function SuccessScreen({
-  downloadToken, product, locale, onClose, onNext, nextProduct,
-}: {
-  downloadToken: string
-  product: ProductInfo
-  locale: string
-  onClose: () => void
-  onNext?: () => void
-  nextProduct?: ProductInfo | null
-}) {
-  const fr  = locale === 'fr'
-  const url = `/api/download?token=${downloadToken}`
-  return (
-    <div className="udm-success">
-      <div className="udm-success-icon">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <h2 className="udm-success-title">{fr ? 'Paiement confirmé !' : 'Payment confirmed!'}</h2>
-      <p className="udm-success-sub">
-        {fr
-          ? 'Votre fichier est prêt. Téléchargez-le maintenant ou retrouvez le lien dans votre email de confirmation.'
-          : 'Your file is ready. Download it now or find the link in your confirmation email.'}
-      </p>
-      <div className="udm-success-product">
-        {product.image_url && (
-          <img src={product.image_url} alt={product.title}
-            style={{ width: 46, height: 46, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-        )}
-        <div>
-          <p style={{ fontWeight: 600, fontSize: 14, color: '#0A0A0A', margin: '0 0 2px' }}>{product.title}</p>
-          <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>
-            {fr ? '5 téléchargements · 30 jours' : '5 downloads · 30 days'}
-          </p>
-        </div>
-      </div>
-      <a href={url} className="udm-download-btn">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        {fr ? 'Télécharger mon fichier' : 'Download my file'}
-      </a>
-
-      {/* Bouton produit suivant (multi-panier) */}
-      {onNext && nextProduct && (
-        <button className="udm-next-btn" onClick={onNext}>
-          <div className="udm-next-btn__inner">
-            <div>
-              <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 2px' }}>
-                {fr ? 'Produit suivant dans votre panier' : 'Next item in your cart'}
-              </p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0 }}>
-                {nextProduct.title}
-              </p>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </div>
-        </button>
-      )}
-
-      <button className="udm-dismiss-btn" onClick={onClose}>
-        {fr ? 'Fermer' : 'Close'}
-      </button>
-    </div>
-  )
-}
+// SuccessScreen mono-produit supprimé — remplacé par SuccessScreenMulti ci-dessous
 
 // ─── Composant principal ───────────────────────────────────────────────────────
-export default function BuyButton({ productId, locale, label, _autoOpen, _onAutoClose, _nextProduct, _onNext }: Props) {
-  const [isOpen,          setIsOpen]          = useState(_autoOpen ?? false)
-  const [step,            setStep]            = useState<'email' | 'payment' | 'success'>('email')
-  const [email,           setEmail]           = useState('')
-  const [emailErr,        setEmailErr]        = useState('')
-  const [loading,         setLoading]         = useState(false)
-  const [clientSecret,    setClientSecret]    = useState<string | null>(null)
-  const [piId,            setPiId]            = useState<string | null>(null)
-  const [product,         setProduct]         = useState<ProductInfo | null>(null)
-  const [downloadToken,   setDownloadToken]   = useState<string | null>(null)
-  const [generalErr,      setGeneralErr]      = useState<string | null>(null)
-  const [mounted,         setMounted]         = useState(false)
+export default function BuyButton({ productId, cartItems, locale, label, _autoOpen, _onAutoClose }: Omit<Props, '_nextProduct' | '_onNext'>) {
+  const [isOpen,        setIsOpen]        = useState(_autoOpen ?? false)
+  const [step,          setStep]          = useState<'email' | 'payment' | 'success'>('email')
+  const [email,         setEmail]         = useState('')
+  const [emailErr,      setEmailErr]      = useState('')
+  const [loading,       setLoading]       = useState(false)
+  const [clientSecret,  setClientSecret]  = useState<string | null>(null)
+  const [piId,          setPiId]          = useState<string | null>(null)
+  // Liste des produits résolus depuis l'API (avec prix vérifié en base)
+  const [products,      setProducts]      = useState<ProductInfo[]>([])
+  // Tokens de téléchargement : un par produit
+  const [downloadTokens, setDownloadTokens] = useState<Array<{productId: string; token: string}>>([])
+  const [generalErr,    setGeneralErr]    = useState<string | null>(null)
+  const [mounted,       setMounted]       = useState(false)
   const styleInjected = useRef(false)
 
   const fr = locale === 'fr'
@@ -481,7 +453,6 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
   // Client-only mount (portal nécessite document)
   useEffect(() => {
     setMounted(true)
-    // Injecter le CSS global une seule fois
     if (!styleInjected.current && typeof document !== 'undefined') {
       const existing = document.getElementById('udm-styles')
       if (!existing) {
@@ -523,21 +494,10 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
     setTimeout(() => {
       setStep('email'); setEmail(''); setEmailErr('')
       setClientSecret(null); setPiId(null)
-      setDownloadToken(null); setGeneralErr(null)
+      setProducts([]); setDownloadTokens([]); setGeneralErr(null)
       _onAutoClose?.()
     }, 320)
   }, [_onAutoClose]) // eslint-disable-line
-
-  // Fermer ce modal puis passer au produit suivant
-  const handleNext = useCallback(() => {
-    setIsOpen(false)
-    setTimeout(() => {
-      setStep('email'); setEmail(''); setEmailErr('')
-      setClientSecret(null); setPiId(null)
-      setDownloadToken(null); setGeneralErr(null)
-      _onNext?.()
-    }, 320)
-  }, [_onNext]) // eslint-disable-line
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -547,10 +507,15 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
     }
     setEmailErr(''); setLoading(true); setGeneralErr(null)
     try {
+      // Construire le body selon le mode (panier ou produit unique)
+      const body = cartItems && cartItems.length > 0
+        ? { cartItems, locale, email }
+        : { productId, locale, email }
+
       const res  = await fetch('/api/stripe/payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, locale, email }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok || !data.clientSecret) {
@@ -559,7 +524,8 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
       }
       setClientSecret(data.clientSecret)
       setPiId(data.paymentIntentId)
-      setProduct(data.product)
+      // Utiliser products[] si disponible, sinon rétrocompat product
+      setProducts(data.products ?? (data.product ? [data.product] : []))
       setStep('payment')
     } catch {
       setGeneralErr(fr ? 'Erreur réseau. Réessayez.' : 'Network error. Please retry.')
@@ -645,7 +611,7 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
         )}
 
         {/* Étape 2 — Paiement */}
-        {step === 'payment' && clientSecret && product && piId && (
+        {step === 'payment' && clientSecret && products.length > 0 && piId && (
           <div className="udm-body">
             <Elements
               stripe={stripePromise}
@@ -668,10 +634,10 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
             >
               <PaymentForm
                 paymentIntentId={piId}
-                product={product}
+                products={products}
                 locale={locale}
                 email={email}
-                onSuccess={(token) => { setDownloadToken(token); setStep('success') }}
+                onSuccess={(tokens) => { setDownloadTokens(tokens); setStep('success') }}
               />
             </Elements>
             <button className="udm-back-btn" onClick={() => setStep('email')}>
@@ -681,14 +647,12 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
         )}
 
         {/* Étape 3 — Succès */}
-        {step === 'success' && product && downloadToken && (
-          <SuccessScreen
-            downloadToken={downloadToken}
-            product={product}
+        {step === 'success' && products.length > 0 && downloadTokens.length > 0 && (
+          <SuccessScreenMulti
+            downloadTokens={downloadTokens}
+            products={products}
             locale={locale}
             onClose={handleClose}
-            onNext={_onNext ? handleNext : undefined}
-            nextProduct={_nextProduct}
           />
         )}
       </div>
@@ -736,55 +700,105 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
   )
 }
 
-// ─── Version "headless" pour le Cart — gère une queue de produits ─────────────
+// ─── SuccessScreenMulti — affiche un bouton de téléchargement par produit ─────
+function SuccessScreenMulti({
+  downloadTokens, products, locale, onClose,
+}: {
+  downloadTokens: Array<{productId: string; token: string}>
+  products: ProductInfo[]
+  locale: string
+  onClose: () => void
+}) {
+  const fr = locale === 'fr'
+
+  // Associer chaque token à son produit
+  const items = downloadTokens.map(dt => ({
+    token: dt.token,
+    product: products.find(p => p.id === dt.productId) ?? null,
+  })).filter(i => i.product !== null) as Array<{token: string; product: ProductInfo}>
+
+  return (
+    <div className="udm-success">
+      <div className="udm-success-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2 className="udm-success-title">{fr ? 'Paiement confirmé !' : 'Payment confirmed!'}</h2>
+      <p className="udm-success-sub">
+        {fr
+          ? `${items.length > 1 ? `Vos ${items.length} fichiers sont prêts.` : 'Votre fichier est prêt.'} Téléchargez-les maintenant ou retrouvez les liens dans votre email.`
+          : `${items.length > 1 ? `Your ${items.length} files are ready.` : 'Your file is ready.'} Download now or find the links in your email.`}
+      </p>
+
+      {/* Un bouton de téléchargement par produit */}
+      {items.map(({ token, product }) => (
+        <div key={token} style={{ marginBottom: 10 }}>
+          {/* Mini-recap produit */}
+          <div className="udm-success-product">
+            {product.image_url && (
+              <img src={product.image_url} alt={product.title}
+                style={{ width: 46, height: 46, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+            )}
+            <div>
+              <p style={{ fontWeight: 600, fontSize: 14, color: '#0A0A0A', margin: '0 0 2px' }}>{product.title}</p>
+              <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>
+                {fr ? '5 téléchargements · 30 jours' : '5 downloads · 30 days'}
+              </p>
+            </div>
+          </div>
+          <a href={`/api/download?token=${token}`} className="udm-download-btn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            {fr ? `Télécharger — ${product.title}` : `Download — ${product.title}`}
+          </a>
+        </div>
+      ))}
+
+      <button className="udm-dismiss-btn" onClick={onClose}>
+        {fr ? 'Fermer' : 'Close'}
+      </button>
+    </div>
+  )
+}
+
+// ─── Version "headless" pour le Cart — UN seul PaymentIntent pour tous les produits ──
 export function CartBuyModal({ locale }: { locale: string }) {
-  // queue = liste des items CartItem sérialisés
-  const [queue,    setQueue]    = useState<Array<{id: string; title: string; price: number; image_url?: string | null}>>([])
-  const [queueIdx, setQueueIdx] = useState(0)
+  const [cartItems, setCartItems] = useState<CartItemPayload[]>([])
+  const [active, setActive] = useState(false)
 
   // Écouter l'event du Cart qui envoie TOUS les produits
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{
-        items: Array<{id: string; title: string; price: number; image_url?: string | null}>
+        items: CartItemPayload[]
         locale: string
       }>).detail
-      setQueue(detail.items)
-      setQueueIdx(0)
+      setCartItems(detail.items)
+      setActive(true)
     }
     window.addEventListener('ud:open-checkout', handler)
     return () => window.removeEventListener('ud:open-checkout', handler)
   }, [])
 
-  const current = queue[queueIdx] ?? null
-  const next    = queue[queueIdx + 1] ?? null
-
-  // Convertir le CartItem suivant en ProductInfo pour SuccessScreen
-  const nextProductInfo: ProductInfo | null = next
-    ? { id: next.id, title: next.title, price: next.price, image_url: next.image_url, slug: '' }
-    : null
-
   const handleClose = () => {
-    setQueue([])
-    setQueueIdx(0)
+    setActive(false)
+    setTimeout(() => setCartItems([]), 350)
   }
 
-  const handleNext = () => {
-    setQueueIdx(prev => prev + 1)
-  }
-
-  if (!current) return null
+  if (!active || cartItems.length === 0) return null
 
   return (
     <BuyButton
-      key={`${current.id}-${queueIdx}`}  // force remount à chaque produit
-      productId={current.id}
+      key={cartItems.map(i => i.id).join('-')}
+      cartItems={cartItems}
       locale={locale}
       label=""
       _autoOpen
       _onAutoClose={handleClose}
-      _nextProduct={nextProductInfo}
-      _onNext={next ? handleNext : undefined}
     />
   )
 }
