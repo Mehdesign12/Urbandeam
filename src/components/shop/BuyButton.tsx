@@ -1,55 +1,78 @@
 'use client'
 
 import { useState } from 'react'
-import { useCart } from './CartContext'
-
-type CartProduct = {
-  id: string
-  slug: string
-  title: string
-  price: number
-  image_url?: string | null
-}
 
 type Props = {
   productId: string
   locale: string
   label: string
-  product?: CartProduct
 }
 
-export default function BuyButton({ productId, locale, label, product }: Props) {
-  const [added, setAdded] = useState(false)
-  const { addItem } = useCart()
+export default function BuyButton({ productId, locale, label }: Props) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleClick = () => {
-    if (product) {
-      addItem({ ...product, locale })
-      setAdded(true)
-      setTimeout(() => setAdded(false), 2000)
+  const handleClick = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, locale }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setError(data.error ?? 'Erreur inconnue')
+        setLoading(false)
+      }
+    } catch {
+      setError('Erreur réseau, veuillez réessayer.')
+      setLoading(false)
     }
   }
 
   return (
-    <button
-      onClick={handleClick}
-      className={`ud-buy-btn${added ? ' ud-buy-btn--added' : ''}`}
-    >
-      {added ? (
-        <>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-          {locale === 'fr' ? 'Ajouté !' : 'Added!'}
-        </>
-      ) : (
-        <>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-          </svg>
-          {label}
-        </>
+    <div style={{ width: '100%' }}>
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className="ud-buy-btn"
+      >
+        {loading ? (
+          <>
+            <svg
+              width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" strokeWidth="2.5"
+              strokeLinecap="round" strokeLinejoin="round"
+              style={{ animation: 'ud-spin 0.8s linear infinite' }}
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            {locale === 'fr' ? 'Redirection…' : 'Redirecting…'}
+          </>
+        ) : (
+          <>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+            {label}
+          </>
+        )}
+      </button>
+
+      {error && (
+        <p style={{
+          marginTop: '10px', fontSize: '13px', color: '#EF4444',
+          textAlign: 'center'
+        }}>
+          {error}
+        </p>
       )}
+
       <style>{`
         .ud-buy-btn {
           width: 100%;
@@ -66,12 +89,15 @@ export default function BuyButton({ productId, locale, label, product }: Props) 
           align-items: center;
           justify-content: center;
           gap: 8px;
-          transition: opacity 0.15s, background 0.15s;
-          margin-bottom: 0;
+          transition: opacity 0.15s;
         }
-        .ud-buy-btn:hover { opacity: 0.85; }
-        .ud-buy-btn--added { background: #10B981; }
+        .ud-buy-btn:hover:not(:disabled) { opacity: 0.85; }
+        .ud-buy-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        @keyframes ud-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
       `}</style>
-    </button>
+    </div>
   )
 }
