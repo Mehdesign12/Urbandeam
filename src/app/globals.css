@@ -36,6 +36,7 @@
   --font-sans:        var(--font-dm-sans), 'DM Sans', sans-serif;
   --font-heading:     var(--font-syne), 'Syne', sans-serif;
   --font-mono:        'SF Mono', 'Fira Code', 'Courier New', monospace;
+  --font-minimal:     var(--font-montserrat), 'Montserrat', 'Roboto', system-ui, sans-serif;
 
   /* Tailles de texte */
   --text-xs:    11px;

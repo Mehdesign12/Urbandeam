@@ -73,47 +73,53 @@ export default async function HomePage({ params }: Props) {
             HERO — WarpBackground (Magic UI)
         ═══════════════════════════════════════ */}
         <WarpBackground
-          beamsPerSide={4}
+          beamsPerSide={3}
           beamSize={5}
-          beamDuration={3}
-          beamDelayMax={3}
-          beamDelayMin={0}
-          perspective={100}
-          gridColor="rgba(255,255,255,0.07)"
+          beamDuration={16}
+          beamDelayMax={12}
+          beamDelayMin={3}
+          perspective={120}
+          gridColor="rgba(0,0,0,0.06)"
           className="ud-hero"
         >
           <div className="ud-container ud-hero__content">
-            <div className="ud-hero__badge">
-              <span className="ud-hero__dot">●</span>
-              {isFr ? '3 nouveaux templates disponibles' : '3 new templates available'}
-            </div>
 
-            <h1 className="ud-hero__title">
-              {isFr
-                ? <>{`Développe ton`}<br /><span className="ud-hero__title--muted">{`plein potentiel`}</span></>
-                : <>Unlock your<br /><span className="ud-hero__title--muted">full potential</span></>
-              }
-            </h1>
+            {/* Bloc texte — rectangle blanc avec bordure gris claire */}
+            <div className="ud-hero__card">
 
-            <p className="ud-hero__desc">
-              {isFr
-                ? "Des templates Excel, Notion et PDF conçus pour gérer ton budget, booster ta productivité et atteindre tes objectifs."
-                : 'Excel, Notion and PDF templates designed to manage your budget, boost productivity and reach your goals.'
-              }
-            </p>
+              <div className="ud-hero__badge">
+                <span className="ud-hero__dot">●</span>
+                {isFr ? '3 nouveaux templates disponibles' : '3 new templates available'}
+              </div>
 
-            <div className="ud-hero__ctas">
-              <Link href={`/${locale}/products`} className="ud-btn-primary">
-                {isFr ? 'Voir les produits' : 'Browse products'}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </Link>
-            </div>
+              <h1 className="ud-hero__title">
+                {isFr
+                  ? <>{`Développe ton`}<br /><span className="ud-hero__title--accent">{`plein potentiel`}</span></>
+                  : <>Unlock your<br /><span className="ud-hero__title--accent">full potential</span></>
+                }
+              </h1>
 
-            <div className="ud-hero__proof">
-              <span className="ud-hero__check">✓</span>
-              {isFr ? 'Paiement sécurisé · Téléchargement immédiat · Support inclus' : 'Secure payment · Instant download · Support included'}
+              <p className="ud-hero__desc">
+                {isFr
+                  ? "Des templates Excel, Notion et PDF conçus pour gérer ton budget, booster ta productivité et atteindre tes objectifs."
+                  : 'Excel, Notion and PDF templates designed to manage your budget, boost productivity and reach your goals.'
+                }
+              </p>
+
+              <div className="ud-hero__ctas">
+                <Link href={`/${locale}/products`} className="ud-hero__btn">
+                  {isFr ? 'Voir les produits' : 'Browse products'}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </Link>
+              </div>
+
+              <div className="ud-hero__proof">
+                <span className="ud-hero__check">✓</span>
+                {isFr ? 'Paiement sécurisé · Téléchargement immédiat · Support inclus' : 'Secure payment · Instant download · Support included'}
+              </div>
+
             </div>
           </div>
         </WarpBackground>
@@ -235,65 +241,111 @@ export default async function HomePage({ params }: Props) {
         /* ── HERO ── */
         /* WarpBackground gère position:relative + overflow:hidden */
         .ud-hero {
-          background: #0A0A0A !important;
-          color: white;
+          background: #ffffff !important;
           width: 100%;
         }
-        /* Padding via ud-hero__content pour ne pas interférer avec WarpBackground */
+        /* Padding via ud-hero__content */
         .ud-hero__content {
-          padding-top: 52px;
-          padding-bottom: 44px;
+          padding-top: 48px;
+          padding-bottom: 48px;
         }
         @media (min-width: 768px) {
-          .ud-hero__content { padding-top: 80px; padding-bottom: 68px; }
+          .ud-hero__content { padding-top: 72px; padding-bottom: 72px; }
         }
+
+        /* ── Card texte — rectangle blanc, bordure gris clair ── */
+        .ud-hero__card {
+          display: inline-block;
+          background: #ffffff;
+          border: 1.5px solid #D1D5DB;
+          border-radius: 14px;
+          padding: 32px 36px 28px;
+          max-width: 560px;
+          box-shadow: 0 1px 12px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.03);
+        }
+        @media (max-width: 640px) {
+          .ud-hero__card { padding: 24px 20px 20px; max-width: 100%; width: 100%; }
+        }
+
+        /* ── Badge ── */
         .ud-hero__badge {
           display: inline-flex; align-items: center; gap: 6px;
-          background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 20px; padding: 5px 12px;
-          font-size: 11px; color: #9CA3AF; margin-bottom: 20px; letter-spacing: 0.02em;
+          background: #F9FAFB; border: 1px solid #E5E7EB;
+          border-radius: 20px; padding: 4px 12px;
+          font-size: 11px; color: #9CA3AF;
+          margin-bottom: 18px; letter-spacing: 0.03em;
+          font-family: 'Montserrat', 'Roboto', system-ui, sans-serif;
+          font-weight: 500; text-transform: uppercase;
         }
-        @media (min-width: 768px) { .ud-hero__badge { font-size: 12px; margin-bottom: 28px; } }
+        .ud-hero__dot { color: #9CA3AF; font-size: 8px; }
 
-        .ud-hero__dot { color: var(--color-success); font-size: 10px; }
+        /* ── Titre — Montserrat, simple, minimaliste ── */
         .ud-hero__title {
-          font-family: var(--font-heading); font-weight: 800;
-          font-size: clamp(32px, 8vw, 64px);
-          letter-spacing: -0.03em; line-height: 1;
-          margin-bottom: 16px; max-width: 680px;
+          font-family: 'Montserrat', 'Roboto', system-ui, sans-serif;
+          font-weight: 700;
+          font-size: clamp(24px, 4.5vw, 44px);
+          letter-spacing: -0.01em;
+          line-height: 1.15;
+          color: #374151;
+          margin-bottom: 14px;
         }
-        @media (min-width: 768px) { .ud-hero__title { margin-bottom: 20px; } }
-        .ud-hero__title--muted { color: #6B7280; }
+        @media (min-width: 768px) { .ud-hero__title { margin-bottom: 16px; } }
+        .ud-hero__title--accent { color: #9CA3AF; font-weight: 400; }
 
+        /* ── Description ── */
         .ud-hero__desc {
-          font-size: 15px; color: #9CA3AF;
-          max-width: 520px; line-height: 1.6; margin-bottom: 28px;
+          font-family: 'Montserrat', 'Roboto', system-ui, sans-serif;
+          font-size: 13.5px;
+          color: #9CA3AF;
+          line-height: 1.7;
+          margin-bottom: 24px;
+          font-weight: 400;
         }
-        @media (min-width: 768px) { .ud-hero__desc { font-size: 17px; margin-bottom: 36px; } }
+        @media (min-width: 768px) { .ud-hero__desc { font-size: 14.5px; margin-bottom: 28px; } }
 
-        .ud-hero__ctas { display: flex; gap: 12px; flex-wrap: wrap; }
-        .ud-btn-primary {
+        /* ── CTA ── */
+        .ud-hero__ctas { display: flex; gap: 10px; flex-wrap: wrap; }
+        .ud-hero__btn {
           display: inline-flex; align-items: center; gap: 8px;
-          background: white; color: var(--color-black);
-          padding: 12px 22px; border-radius: 6px;
-          font-size: 14px; font-weight: 600; text-decoration: none;
-          font-family: var(--font-sans); transition: opacity 150ms;
+          background: #F3F4F6; color: #374151;
+          padding: 11px 20px; border-radius: 8px;
+          font-size: 13px; font-weight: 600; text-decoration: none;
+          font-family: 'Montserrat', 'Roboto', system-ui, sans-serif;
+          letter-spacing: 0.02em;
+          transition: background 200ms, border-color 200ms;
+          border: 1.5px solid #D1D5DB;
         }
-        .ud-btn-primary:hover { opacity: 0.85; }
+        .ud-hero__btn:hover { background: #E9EBEE; border-color: #C4C9D0; }
+        .ud-hero__btn:active { transform: scale(0.99); }
 
+        /* ── Preuve ── */
         .ud-hero__proof {
           display: flex; align-items: center; gap: 8px;
-          margin-top: 36px; padding-top: 32px;
-          border-top: 1px solid rgba(255,255,255,0.08);
-          font-size: 12px; color: #6B7280;
+          margin-top: 22px; padding-top: 20px;
+          border-top: 1px solid #F3F4F6;
+          font-size: 11px; color: #C4C9D0;
+          font-family: 'Montserrat', 'Roboto', system-ui, sans-serif;
+          letter-spacing: 0.02em;
         }
-        @media (min-width: 768px) { .ud-hero__proof { margin-top: 48px; padding-top: 40px; font-size: 13px; } }
         .ud-hero__check {
-          width: 18px; height: 18px; background: var(--color-success);
+          width: 16px; height: 16px; background: #D1D5DB;
           border-radius: 50%; display: inline-flex; align-items: center;
-          justify-content: center; color: white; font-size: 9px;
+          justify-content: center; color: white; font-size: 8px;
           font-weight: 700; flex-shrink: 0;
         }
+
+        /* ud-btn-primary (section CTA finale — style gris clair) */
+        .ud-btn-primary {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: #F3F4F6; color: #374151;
+          padding: 12px 22px; border-radius: 8px;
+          font-size: 13.5px; font-weight: 600; text-decoration: none;
+          font-family: 'Montserrat', 'Roboto', var(--font-sans), sans-serif;
+          letter-spacing: 0.02em;
+          border: 1.5px solid #D1D5DB;
+          transition: background 200ms, border-color 200ms;
+        }
+        .ud-btn-primary:hover { background: #E9EBEE; border-color: #C4C9D0; }
 
         /* ── SECTIONS ── */
         .ud-section { padding: 48px 0; }
@@ -358,17 +410,20 @@ export default async function HomePage({ params }: Props) {
           display: flex; align-items: center; gap: 4px;
         }
 
-        /* ── CTA FINAL ── */
-        .ud-cta { background: var(--color-black); color: white; padding: 60px 0; text-align: center; }
+        /* ── CTA FINAL ── fond blanc, ton gris ── */
+        .ud-cta { background: #F9FAFB; color: #374151; padding: 60px 0; text-align: center; border-top: 1px solid #E5E7EB; }
         @media (min-width: 768px) { .ud-cta { padding: 80px 0; } }
         .ud-cta__inner { max-width: 560px; margin: 0 auto; padding: 0 20px; }
         @media (min-width: 768px) { .ud-cta__inner { padding: 0 60px; } }
         .ud-cta__title {
-          font-family: var(--font-heading); font-weight: 800;
-          font-size: clamp(26px, 5vw, 36px);
-          letter-spacing: -0.03em; margin-bottom: 14px; line-height: 1.1;
+          font-family: 'Montserrat', 'Roboto', var(--font-heading), sans-serif; font-weight: 700;
+          font-size: clamp(22px, 4vw, 32px);
+          letter-spacing: -0.01em; margin-bottom: 14px; line-height: 1.2;
+          color: #374151;
         }
-        .ud-cta__desc { font-size: 14px; color: #9CA3AF; margin-bottom: 28px; line-height: 1.6; }
+        .ud-cta__desc { font-size: 14px; color: #9CA3AF; margin-bottom: 28px; line-height: 1.6;
+          font-family: 'Montserrat', 'Roboto', system-ui, sans-serif;
+        }
         @media (min-width: 768px) { .ud-cta__desc { font-size: 15px; margin-bottom: 32px; } }
       `}</style>
     </>
