@@ -7,26 +7,29 @@ export default async function AdminDashboard() {
   await requireAdmin()
   const supabase = createAdminClient()
 
+  const fallbackCount = { count: 0, data: null, error: null }
+  const fallbackData  = { data: [], error: null }
 
-  const [
-    { count: totalProducts },
-    { count: publishedProducts },
-    { count: totalOrders },
-    { data: recentOrders },
-  ] = await Promise.all([
-    supabase.from('products').select('*', { count: 'exact', head: true }),
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'paid'),
-    supabase.from('orders').select('id, customer_email, amount_total, currency, status, created_at').eq('status', 'paid').order('created_at', { ascending: false }).limit(5),
+  // Requêtes protégées — les tables peuvent ne pas encore exister
+  const [r1, r2, r3, r4] = await Promise.all([
+    Promise.resolve(supabase.from('products').select('*', { count: 'exact', head: true })).catch(() => fallbackCount),
+    Promise.resolve(supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_published', true)).catch(() => fallbackCount),
+    Promise.resolve(supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'paid')).catch(() => fallbackCount),
+    Promise.resolve(supabase.from('orders').select('id, customer_email, amount_total, currency, status, created_at').eq('status', 'paid').order('created_at', { ascending: false }).limit(5)).catch(() => fallbackData),
   ])
 
-  // Calcul du CA total
-  const { data: revenueData } = await supabase
-    .from('orders')
-    .select('amount_total')
-    .eq('status', 'paid')
+  const totalProducts    = r1.count ?? 0
+  const publishedProducts = r2.count ?? 0
+  const totalOrders      = r3.count ?? 0
+  const recentOrders     = (r4.data ?? []) as { id: string; customer_email: string; amount_total: number; currency: string; status: string; created_at: string }[]
 
-  const totalRevenue = (revenueData ?? []).reduce((s, o) => s + (o.amount_total ?? 0), 0)
+  // Calcul du CA total
+  const revenueResult = await Promise.resolve(
+    supabase.from('orders').select('amount_total').eq('status', 'paid')
+  ).catch(() => fallbackData)
+
+  const totalRevenue = ((revenueResult.data ?? []) as { amount_total: number }[])
+    .reduce((s, o) => s + (o.amount_total ?? 0), 0)
 
   const fmt = (cents: number) => `€${(cents / 100).toFixed(2)}`
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
