@@ -1,4 +1,5 @@
-import { requireAdmin } from '@/lib/admin-auth'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 
 export const metadata = {
@@ -6,15 +7,15 @@ export const metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin()
+async function isAuthenticated() {
+  const cookieStore = await cookies()
+  return cookieStore.get('ud_admin_session')?.value === 'authenticated'
+}
 
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F5F5F5' }}>
-      <AdminSidebar />
-      <main style={{ flex: 1, minWidth: 0, padding: '32px', overflowY: 'auto' }}>
-        {children}
-      </main>
-    </div>
-  )
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <>{children}</>
 }

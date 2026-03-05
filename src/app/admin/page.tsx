@@ -1,10 +1,12 @@
 import { requireAdmin } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import AdminShell from '@/components/admin/AdminShell'
 
 export default async function AdminDashboard() {
   await requireAdmin()
   const supabase = createAdminClient()
+
 
   const [
     { count: totalProducts },
@@ -67,6 +69,7 @@ export default async function AdminDashboard() {
   ]
 
   return (
+    <AdminShell>
     <div>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
@@ -166,5 +169,6 @@ export default async function AdminDashboard() {
         )}
       </div>
     </div>
+    </AdminShell>
   )
 }
