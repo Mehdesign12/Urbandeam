@@ -193,7 +193,7 @@ export default function ProductForm({ initialData, productId, mode }: Props) {
           <div style={cardStyle}>
             <h3 style={sectionTitle}>Fichier digital</h3>
             <p style={{ fontSize: '13px', color: '#A3A3A3', marginBottom: '16px' }}>
-              PDF, ZIP, Excel, Word, PowerPoint — max 500 MB
+              PDF, ZIP, Excel, Word, PowerPoint — max 50 MB
             </p>
 
             {fileName ? (

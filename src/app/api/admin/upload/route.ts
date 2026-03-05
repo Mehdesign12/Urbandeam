@@ -39,10 +39,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Format fichier non supporté (pdf, zip, xlsx, docx, pptx)' }, { status: 400 })
   }
 
-  // Taille max : 50 MB pour images, 500 MB pour fichiers
-  const maxSize = type === 'image' ? 50 * 1024 * 1024 : 500 * 1024 * 1024
+  // Taille max : 50 MB (limite Supabase Storage plan gratuit)
+  const maxSize = 50 * 1024 * 1024
   if (file.size > maxSize) {
-    return NextResponse.json({ error: `Fichier trop volumineux (max ${type === 'image' ? '50MB' : '500MB'})` }, { status: 400 })
+    return NextResponse.json({ error: 'Fichier trop volumineux (max 50 MB)' }, { status: 400 })
   }
 
   const arrayBuffer = await file.arrayBuffer()
