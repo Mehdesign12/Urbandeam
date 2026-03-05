@@ -106,15 +106,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const downloadExpiresAt = new Date()
   downloadExpiresAt.setDate(downloadExpiresAt.getDate() + 30)
 
+  // Générer le token côté app (plus fiable que DEFAULT côté DB)
+  const downloadToken = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '')
+
   const { error: itemError } = await supabase
     .from('order_items')
     .insert({
-      order_id:           order.id,
-      product_id:         productId,
-      price_paid:         product.price,
-      download_count:     0,
-      download_limit:     5,
+      order_id:            order.id,
+      product_id:          productId,
+      price_paid:          product.price,
+      download_count:      0,
+      download_limit:      5,
       download_expires_at: downloadExpiresAt.toISOString(),
+      download_token:      downloadToken,
     })
 
   if (itemError) {
