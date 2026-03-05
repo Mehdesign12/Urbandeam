@@ -512,6 +512,14 @@ export default function BuyButton({ productId, cartItems, locale, label, _autoOp
         ? { cartItems, locale, email }
         : { productId, locale, email }
 
+      // Debug log
+      console.log('[BuyButton] handleEmailSubmit body:', JSON.stringify({
+        mode: cartItems && cartItems.length > 0 ? 'cart' : 'single',
+        cartItemsCount: cartItems?.length ?? 0,
+        productId: productId ?? 'none',
+        locale,
+      }))
+
       const res  = await fetch('/api/stripe/payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

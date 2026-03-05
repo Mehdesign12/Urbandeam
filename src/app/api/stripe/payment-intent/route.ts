@@ -4,40 +4,110 @@ import { createAdminClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 
+// Type d'un item de cart envoyé depuis le front
+type CartItemPayload = {
+  id: string
+  title: string
+  price: number       // centimes
+  image_url?: string | null
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { productId, locale, email } = await req.json() as {
-      productId: string
+    const body = await req.json() as {
+      // Mode produit unique (Buy Now sur la fiche produit)
+      productId?: string
+      // Mode panier (plusieurs produits)
+      cartItems?: CartItemPayload[]
       locale: string
       email: string
     }
 
-    if (!productId) {
-      return NextResponse.json({ error: 'productId requis' }, { status: 400 })
-    }
+    const { locale, email } = body
+    const loc = locale ?? 'fr'
+
+    // Log pour débogage
+    console.log('[PaymentIntent] body reçu:', JSON.stringify({
+      hasProductId: !!body.productId,
+      cartItemsLength: body.cartItems?.length ?? 0,
+      cartItemsIds: body.cartItems?.map(i => i.id),
+      email: email ? email.slice(0, 5) + '***' : 'absent',
+      locale: loc,
+    }))
+
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400 })
     }
 
     const supabase = createAdminClient()
-    const { data: product, error } = await supabase
-      .from('products')
-      .select('id, price, title, description, image_url, slug')
-      .eq('id', productId)
-      .eq('is_published', true)
-      .single()
 
-    if (error || !product) {
-      return NextResponse.json({ error: 'Produit introuvable' }, { status: 404 })
+    // ── Résoudre la liste de produits ────────────────────────────────────────
+    let products: Array<{
+      id: string
+      title: string
+      price: number
+      image_url: string | null
+      slug: string
+    }> = []
+
+    if (body.cartItems && body.cartItems.length > 0) {
+      // Mode panier : on vérifie chaque produit en base pour avoir les vraies données
+      const ids = body.cartItems.map(i => i.id)
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, price, title, image_url, slug')
+        .in('id', ids)
+        .eq('is_published', true)
+
+      if (error || !data || data.length === 0) {
+        return NextResponse.json({ error: 'Produits introuvables' }, { status: 404 })
+      }
+
+      // Conserver l'ordre du cart
+      products = ids
+        .map(id => data.find(p => p.id === id))
+        .filter(Boolean)
+        .map(p => ({
+          id: p!.id,
+          title: (p!.title as Record<string, string>)?.[loc]
+            ?? (p!.title as Record<string, string>)?.['fr']
+            ?? p!.slug,
+          price: p!.price,
+          image_url: p!.image_url ?? null,
+          slug: p!.slug,
+        }))
+
+    } else if (body.productId) {
+      // Mode produit unique
+      const { data: p, error } = await supabase
+        .from('products')
+        .select('id, price, title, image_url, slug')
+        .eq('id', body.productId)
+        .eq('is_published', true)
+        .single()
+
+      if (error || !p) {
+        return NextResponse.json({ error: 'Produit introuvable' }, { status: 404 })
+      }
+
+      products = [{
+        id: p.id,
+        title: (p.title as Record<string, string>)?.[loc]
+          ?? (p.title as Record<string, string>)?.['fr']
+          ?? p.slug,
+        price: p.price,
+        image_url: p.image_url ?? null,
+        slug: p.slug,
+      }]
+
+    } else {
+      return NextResponse.json({ error: 'productId ou cartItems requis' }, { status: 400 })
     }
 
-    const loc = locale ?? 'fr'
-    const title =
-      (product.title as Record<string, string>)?.[loc] ??
-      (product.title as Record<string, string>)?.['fr'] ??
-      product.slug
+    // ── Calculer le montant total ─────────────────────────────────────────────
+    const totalAmount = products.reduce((sum, p) => sum + p.price, 0)
 
-    // Créer ou récupérer le customer Stripe
+    // ── Créer ou récupérer le customer Stripe ─────────────────────────────────
     const customers = await stripe.customers.list({ email, limit: 1 })
     let customerId: string
     if (customers.data.length > 0) {
@@ -47,33 +117,40 @@ export async function POST(req: NextRequest) {
       customerId = customer.id
     }
 
-    // Créer le PaymentIntent
+    // ── Description pour Stripe ───────────────────────────────────────────────
+    const description = products.length === 1
+      ? products[0].title
+      : `${products.length} produits — ${products.map(p => p.title).join(', ')}`
+
+    // ── Créer le PaymentIntent ────────────────────────────────────────────────
+    // On stocke les product_ids séparés par virgule dans les métadonnées
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: product.price,
+      amount: totalAmount,
       currency: 'eur',
       customer: customerId,
       receipt_email: email,
       metadata: {
-        product_id: product.id,
-        product_slug: product.slug,
-        locale: loc,
+        product_ids:   products.map(p => p.id).join(','),
+        product_slugs: products.map(p => p.slug).join(','),
+        locale:        loc,
         customer_email: email,
+        // Rétrocompat champ unique
+        product_id:   products[0].id,
+        product_slug: products[0].slug,
       },
       automatic_payment_methods: { enabled: true },
-      description: title,
+      description,
     })
 
     return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
+      clientSecret:    paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      product: {
-        id: product.id,
-        title,
-        price: product.price,
-        image_url: product.image_url,
-        slug: product.slug,
-      },
+      // Retourner tous les produits pour l'affichage dans le modal
+      products,
+      // Rétrocompat : premier produit sous la clé "product"
+      product: products[0],
     })
+
   } catch (err) {
     console.error('[PaymentIntent]', err)
     return NextResponse.json(

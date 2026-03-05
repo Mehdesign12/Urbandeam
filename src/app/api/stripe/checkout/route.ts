@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { productId, locale } = body as { productId: string; locale: string }
 
     if (!productId) {
-      return NextResponse.json({ error: 'productId requis' }, { status: 400 })
+      return NextResponse.json({ error: '[checkout] productId requis — utilisez /api/stripe/payment-intent' }, { status: 400 })
     }
 
     // Récupérer le produit depuis Supabase
