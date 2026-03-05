@@ -88,7 +88,10 @@ export default function ProductGallery({ images, title }: Props) {
           padding-bottom: 75%;
           background: #EFEFEF;
           border-radius: 16px;
+          /* overflow:hidden confine les enfants — les flèches ne peuvent PAS sortir de ce bloc */
           overflow: hidden;
+          /* isolation crée un stacking context isolé */
+          isolation: isolate;
           margin-bottom: 12px;
         }
         .ud-gallery__arrow {
@@ -97,8 +100,8 @@ export default function ProductGallery({ images, title }: Props) {
           background: white; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-          /* z-index local au conteneur .ud-gallery__main (overflow:hidden + position:relative) */
-          z-index: 2;
+          /* z-index 1 : visible dans le conteneur isolé, jamais en dehors */
+          z-index: 1;
           color: #0A0A0A; transition: background 0.12s, opacity 0.15s;
         }
         .ud-gallery__arrow:hover { background: #F5F5F5; }
