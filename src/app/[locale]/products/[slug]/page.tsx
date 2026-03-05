@@ -157,8 +157,7 @@ export default async function ProductPage({ params }: Props) {
               <BuyButton
                 productId={product.id}
                 locale={locale}
-                label={isFr ? 'Ajouter au panier' : 'Add to cart'}
-                product={{ id: product.id, slug: product.slug, title, price: product.price, image_url: product.image_url }}
+                label={isFr ? 'Acheter maintenant' : 'Buy now'}
               />
 
               {/* More payment options */}
