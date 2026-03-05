@@ -96,8 +96,10 @@ export default function ProductGallery({ images, title }: Props) {
           width: 36px; height: 36px; border-radius: 50%;
           background: white; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.12); z-index: 2;
-          color: #0A0A0A; transition: background 0.12s;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+          /* z-index local au conteneur .ud-gallery__main (overflow:hidden + position:relative) */
+          z-index: 2;
+          color: #0A0A0A; transition: background 0.12s, opacity 0.15s;
         }
         .ud-gallery__arrow:hover { background: #F5F5F5; }
         .ud-gallery__arrow--left { left: 12px; }
