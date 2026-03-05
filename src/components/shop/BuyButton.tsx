@@ -58,6 +58,10 @@ const MODAL_CSS = `
     padding: 24px;
     box-sizing: border-box;
     animation: udm-bg-in 0.22s ease;
+    /* Empêche tout débordement */
+    overflow: hidden;
+    width: 100%;
+    max-width: 100vw;
   }
   .udm-box {
     background: #fff;
@@ -71,6 +75,8 @@ const MODAL_CSS = `
     animation: udm-box-in 0.3s cubic-bezier(0.34,1.5,0.64,1);
     scrollbar-width: none;
     flex-shrink: 0;
+    /* Empêche le contenu interne de déborder */
+    box-sizing: border-box;
   }
   .udm-box::-webkit-scrollbar { display: none; }
 
@@ -486,9 +492,23 @@ export default function BuyButton({ productId, cartItems, locale, label, _autoOp
       const w = window.innerWidth - document.documentElement.clientWidth
       document.body.style.overflow    = 'hidden'
       document.body.style.paddingRight = `${w}px`
+      // Empêcher le zoom iOS lors de la saisie dans les inputs
+      const viewport = document.querySelector('meta[name="viewport"]')
+      if (viewport) {
+        viewport.setAttribute('content',
+          'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
+        )
+      }
     } else {
       document.body.style.overflow    = ''
       document.body.style.paddingRight = ''
+      // Restaurer le viewport normal à la fermeture
+      const viewport = document.querySelector('meta[name="viewport"]')
+      if (viewport) {
+        viewport.setAttribute('content',
+          'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content'
+        )
+      }
     }
     return () => {
       document.body.style.overflow    = ''

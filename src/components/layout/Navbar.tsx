@@ -191,6 +191,10 @@ export default function Navbar({ locale }: { locale: string }) {
           z-index: 100;
           background: #fff;
           border-bottom: 1px solid #E5E5E5;
+          /* Empêche tout débordement horizontal */
+          overflow: hidden;
+          width: 100%;
+          max-width: 100vw;
         }
         .ud-nav__inner {
           max-width: 1280px;
@@ -200,6 +204,8 @@ export default function Navbar({ locale }: { locale: string }) {
           display: flex;
           align-items: center;
           gap: 32px;
+          /* Empêche le burger de déborder */
+          overflow: hidden;
         }
         .ud-nav__logo { display: flex; align-items: center; flex-shrink: 0; text-decoration: none; }
         .ud-nav__links { display: flex; align-items: center; gap: 2px; flex: 1; }
@@ -315,8 +321,13 @@ export default function Navbar({ locale }: { locale: string }) {
         @media (max-width: 768px) {
           .ud-nav__links { display: none !important; }
           .ud-nav__burger { display: flex !important; }
-          .ud-nav__inner { gap: 4px; padding: 0 12px; }
-          /* Masquer la devise sur très petit écran */
+          .ud-nav__inner {
+            gap: 0;
+            padding: 0 12px;
+          }
+          .ud-nav__logo { margin-right: auto; }
+          .ud-nav__right { gap: 0; }
+          /* Masquer la devise sur mobile */
           .ud-nav__currency { display: none; }
         }
         @media (max-width: 360px) {

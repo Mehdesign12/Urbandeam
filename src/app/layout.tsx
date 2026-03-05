@@ -18,6 +18,15 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
+}
+
 export const metadata: Metadata = {
   title: "Urbandeam — Templates Excel, PDF & Notion pour le développement personnel",
   description:
@@ -43,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${syne.variable} ${dmSans.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased" style={{ overflowX: 'hidden', maxWidth: '100vw' }}>{children}</body>
     </html>
   );
 }

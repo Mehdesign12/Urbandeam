@@ -87,6 +87,7 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden; /* bloque le scroll horizontal au niveau racine */
 }
 
 body {
@@ -99,6 +100,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* Évite le zoom involontaire sur les inputs iOS */
   touch-action: manipulation;
+  /* Bloque tout débordement horizontal */
+  overflow-x: hidden;
+  max-width: 100vw;
+  position: relative;
 }
 
 /* Tap highlight supprimé sur mobile pour un rendu plus propre */
