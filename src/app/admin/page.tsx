@@ -87,15 +87,12 @@ export default async function AdminDashboard() {
       {/* Stats cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '40px' }}>
         {stats.map(({ label, value, icon, href, color }) => (
-          <Link key={label} href={href} style={{ textDecoration: 'none' }}>
+          <Link key={label} href={href} style={{ textDecoration: 'none' }} className="ud-stat-card">
             <div style={{
               background: 'white', borderRadius: '12px',
               border: '1px solid #E5E5E5', padding: '24px',
               transition: 'box-shadow 0.15s',
-            }}
-              onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)')}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
-            >
+            }}>
               <div style={{
                 width: '40px', height: '40px', borderRadius: '10px',
                 background: color, display: 'flex', alignItems: 'center',
@@ -171,6 +168,10 @@ export default async function AdminDashboard() {
           </table>
         )}
       </div>
+      <style>{`
+        .ud-stat-card > div { transition: box-shadow 0.15s; }
+        .ud-stat-card:hover > div { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+      `}</style>
     </div>
     </AdminShell>
   )
