@@ -28,6 +28,8 @@ type Props = {
   label: string
   _autoOpen?: boolean
   _onAutoClose?: () => void
+  _nextProduct?: ProductInfo | null   // produit suivant dans la queue
+  _onNext?: () => void                // callback pour passer au suivant
 }
 
 // ─── CSS global injecté une seule fois ────────────────────────────────────────
@@ -239,6 +241,20 @@ const MODAL_CSS = `
   }
   .udm-dismiss-btn:hover { color: #374151; }
 
+  /* Bouton "produit suivant" dans l'écran succès */
+  .udm-next-btn {
+    width: 100%; background: #F9FAFB;
+    border: 1.5px solid #E5E7EB; border-radius: 12px;
+    padding: 14px 16px; cursor: pointer; font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    margin-bottom: 10px;
+  }
+  .udm-next-btn:hover { border-color: #0A0A0A; background: #F3F4F6; }
+  .udm-next-btn__inner {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 12px;
+  }
+
   .udm-divider { height: 1px; background: #F3F4F6; margin: 0 0 14px; }
 
   @keyframes udm-bg-in   { from { opacity: 0; } to { opacity: 1; } }
@@ -374,12 +390,14 @@ function PaymentForm({
 
 // ─── Écran succès ──────────────────────────────────────────────────────────────
 function SuccessScreen({
-  downloadToken, product, locale, onClose,
+  downloadToken, product, locale, onClose, onNext, nextProduct,
 }: {
   downloadToken: string
   product: ProductInfo
   locale: string
   onClose: () => void
+  onNext?: () => void
+  nextProduct?: ProductInfo | null
 }) {
   const fr  = locale === 'fr'
   const url = `/api/download?token=${downloadToken}`
@@ -416,6 +434,26 @@ function SuccessScreen({
         </svg>
         {fr ? 'Télécharger mon fichier' : 'Download my file'}
       </a>
+
+      {/* Bouton produit suivant (multi-panier) */}
+      {onNext && nextProduct && (
+        <button className="udm-next-btn" onClick={onNext}>
+          <div className="udm-next-btn__inner">
+            <div>
+              <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 2px' }}>
+                {fr ? 'Produit suivant dans votre panier' : 'Next item in your cart'}
+              </p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0 }}>
+                {nextProduct.title}
+              </p>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </button>
+      )}
+
       <button className="udm-dismiss-btn" onClick={onClose}>
         {fr ? 'Fermer' : 'Close'}
       </button>
@@ -424,7 +462,7 @@ function SuccessScreen({
 }
 
 // ─── Composant principal ───────────────────────────────────────────────────────
-export default function BuyButton({ productId, locale, label, _autoOpen, _onAutoClose }: Props) {
+export default function BuyButton({ productId, locale, label, _autoOpen, _onAutoClose, _nextProduct, _onNext }: Props) {
   const [isOpen,          setIsOpen]          = useState(_autoOpen ?? false)
   const [step,            setStep]            = useState<'email' | 'payment' | 'success'>('email')
   const [email,           setEmail]           = useState('')
@@ -489,6 +527,17 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
       _onAutoClose?.()
     }, 320)
   }, [_onAutoClose]) // eslint-disable-line
+
+  // Fermer ce modal puis passer au produit suivant
+  const handleNext = useCallback(() => {
+    setIsOpen(false)
+    setTimeout(() => {
+      setStep('email'); setEmail(''); setEmailErr('')
+      setClientSecret(null); setPiId(null)
+      setDownloadToken(null); setGeneralErr(null)
+      _onNext?.()
+    }, 320)
+  }, [_onNext]) // eslint-disable-line
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -638,6 +687,8 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
             product={product}
             locale={locale}
             onClose={handleClose}
+            onNext={_onNext ? handleNext : undefined}
+            nextProduct={_nextProduct}
           />
         )}
       </div>
@@ -685,31 +736,55 @@ export default function BuyButton({ productId, locale, label, _autoOpen, _onAuto
   )
 }
 
-// ─── Version "headless" pour le Cart ──────────────────────────────────────────
-// Rendu dans CartProvider — s'ouvre via l'event ud:open-checkout
+// ─── Version "headless" pour le Cart — gère une queue de produits ─────────────
 export function CartBuyModal({ locale }: { locale: string }) {
-  const [productId, setProductId] = useState<string | null>(null)
+  // queue = liste des items CartItem sérialisés
+  const [queue,    setQueue]    = useState<Array<{id: string; title: string; price: number; image_url?: string | null}>>([])
+  const [queueIdx, setQueueIdx] = useState(0)
 
+  // Écouter l'event du Cart qui envoie TOUS les produits
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ productId: string; locale: string }>).detail
-      if (detail.locale === locale || true) { // accepter tous les locales
-        setProductId(detail.productId)
-      }
+      const detail = (e as CustomEvent<{
+        items: Array<{id: string; title: string; price: number; image_url?: string | null}>
+        locale: string
+      }>).detail
+      setQueue(detail.items)
+      setQueueIdx(0)
     }
     window.addEventListener('ud:open-checkout', handler)
     return () => window.removeEventListener('ud:open-checkout', handler)
-  }, [locale])
+  }, [])
 
-  if (!productId) return null
+  const current = queue[queueIdx] ?? null
+  const next    = queue[queueIdx + 1] ?? null
+
+  // Convertir le CartItem suivant en ProductInfo pour SuccessScreen
+  const nextProductInfo: ProductInfo | null = next
+    ? { id: next.id, title: next.title, price: next.price, image_url: next.image_url, slug: '' }
+    : null
+
+  const handleClose = () => {
+    setQueue([])
+    setQueueIdx(0)
+  }
+
+  const handleNext = () => {
+    setQueueIdx(prev => prev + 1)
+  }
+
+  if (!current) return null
 
   return (
     <BuyButton
-      productId={productId}
+      key={`${current.id}-${queueIdx}`}  // force remount à chaque produit
+      productId={current.id}
       locale={locale}
       label=""
       _autoOpen
-      _onAutoClose={() => setProductId(null)}
+      _onAutoClose={handleClose}
+      _nextProduct={nextProductInfo}
+      _onNext={next ? handleNext : undefined}
     />
   )
 }

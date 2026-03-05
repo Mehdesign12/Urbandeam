@@ -156,15 +156,21 @@ export function CartProvider({ children, locale }: { children: ReactNode; locale
                   className="ud-cart__checkout"
                   onClick={() => {
                     if (items.length === 0) return
-                    // Fermer le cart
                     setIsOpen(false)
-                    // Déclencher le modal de paiement sur le premier produit
-                    const first = items[0]
+                    // Envoyer TOUS les items dans la queue
                     setTimeout(() => {
                       window.dispatchEvent(new CustomEvent('ud:open-checkout', {
-                        detail: { productId: first.id, locale: first.locale }
+                        detail: {
+                          items: items.map(i => ({
+                            id: i.id,
+                            title: i.title,
+                            price: i.price,
+                            image_url: i.image_url ?? null,
+                          })),
+                          locale,
+                        }
                       }))
-                    }, 320) // laisser le cart se fermer d'abord
+                    }, 320)
                   }}
                 >
                   {locale === 'fr' ? 'Commander' : 'Check out'}
