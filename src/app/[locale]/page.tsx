@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer'
 import ProductGrid from '@/components/shop/ProductGrid'
 import Link from 'next/link'
 import { WarpBackground } from '@/components/ui/WarpBackground'
+import { ShineBorder } from '@/components/ui/ShineBorder'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -75,21 +76,34 @@ export default async function HomePage({ params }: Props) {
         <WarpBackground
           beamsPerSide={3}
           beamSize={5}
-          beamDuration={16}
-          beamDelayMax={12}
-          beamDelayMin={3}
+          beamDuration={12}
+          beamDelayMax={9}
+          beamDelayMin={2}
           perspective={120}
           gridColor="rgba(0,0,0,0.06)"
           className="ud-hero"
         >
           <div className="ud-container ud-hero__content">
 
-            {/* Bloc texte — rectangle blanc avec bordure gris claire */}
+            {/* Bloc texte — rectangle blanc avec ShineBorder */}
             <div className="ud-hero__card">
+              <ShineBorder
+                borderWidth={1.5}
+                duration={8}
+                shineColor={["#D1D5DB", "#9CA3AF", "#E5E7EB"]}
+              />
 
-              <div className="ud-hero__badge">
-                <span className="ud-hero__dot">●</span>
-                {isFr ? '3 nouveaux templates disponibles' : '3 new templates available'}
+              {/* Trustpilot */}
+              <div className="ud-hero__trustpilot">
+                <svg width="80" height="20" viewBox="0 0 126 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Trustpilot">
+                  <path d="M14.5 0L18.09 11.09H30L20.46 17.91L24.04 29L14.5 22.18L4.96 29L8.54 17.91L-1 11.09H10.91L14.5 0Z" fill="#00B67A"/>
+                  <path d="M40.5 0L44.09 11.09H56L46.46 17.91L50.04 29L40.5 22.18L30.96 29L34.54 17.91L25 11.09H36.91L40.5 0Z" fill="#00B67A"/>
+                  <path d="M66.5 0L70.09 11.09H82L72.46 17.91L76.04 29L66.5 22.18L56.96 29L60.54 17.91L51 11.09H62.91L66.5 0Z" fill="#00B67A"/>
+                  <path d="M92.5 0L96.09 11.09H108L98.46 17.91L102.04 29L92.5 22.18L82.96 29L86.54 17.91L77 11.09H88.91L92.5 0Z" fill="#00B67A"/>
+                  <path d="M118.5 0L122.09 11.09H134L124.46 17.91L128.04 29L118.5 22.18L108.96 29L112.54 17.91L103 11.09H114.91L118.5 0Z" fill="#DCDCE6"/>
+                  <path d="M118.5 0L122.09 11.09H128.75L118.5 18.27V0Z" fill="#00B67A"/>
+                </svg>
+                <span className="ud-hero__tp-label">{isFr ? '4.8 · Excellent' : '4.8 · Excellent'}</span>
               </div>
 
               <h1 className="ud-hero__title">
@@ -253,31 +267,31 @@ export default async function HomePage({ params }: Props) {
           .ud-hero__content { padding-top: 72px; padding-bottom: 72px; }
         }
 
-        /* ── Card texte — rectangle blanc, bordure gris clair ── */
+        /* ── Card texte — rectangle blanc, ShineBorder ── */
         .ud-hero__card {
           display: inline-block;
+          position: relative;
           background: #ffffff;
-          border: 1.5px solid #D1D5DB;
           border-radius: 14px;
           padding: 32px 36px 28px;
           max-width: 560px;
-          box-shadow: 0 1px 12px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.03);
+          box-shadow: 0 1px 12px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03);
+          overflow: hidden;
         }
         @media (max-width: 640px) {
           .ud-hero__card { padding: 24px 20px 20px; max-width: 100%; width: 100%; }
         }
 
-        /* ── Badge ── */
-        .ud-hero__badge {
-          display: inline-flex; align-items: center; gap: 6px;
-          background: #F9FAFB; border: 1px solid #E5E7EB;
-          border-radius: 20px; padding: 4px 12px;
-          font-size: 11px; color: #9CA3AF;
-          margin-bottom: 18px; letter-spacing: 0.03em;
-          font-family: 'Montserrat', 'Roboto', system-ui, sans-serif;
-          font-weight: 500; text-transform: uppercase;
+        /* ── Trustpilot ── */
+        .ud-hero__trustpilot {
+          display: flex; align-items: center; gap: 8px;
+          margin-bottom: 20px;
         }
-        .ud-hero__dot { color: #9CA3AF; font-size: 8px; }
+        .ud-hero__tp-label {
+          font-family: 'Montserrat', 'Roboto', system-ui, sans-serif;
+          font-size: 11.5px; font-weight: 600;
+          color: #6B7280; letter-spacing: 0.01em;
+        }
 
         /* ── Titre — Montserrat, simple, minimaliste ── */
         .ud-hero__title {

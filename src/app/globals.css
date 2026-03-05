@@ -123,6 +123,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ─────────────────────────────────────────────
+   ANIMATIONS — ShineBorder (Magic UI)
+───────────────────────────────────────────── */
+
+@keyframes shine {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+.animate-shine {
+  animation: shine var(--duration, 14s) linear infinite;
+}
+
+/* ─────────────────────────────────────────────
    COMPOSANTS GLOBAUX
 ───────────────────────────────────────────── */
 
