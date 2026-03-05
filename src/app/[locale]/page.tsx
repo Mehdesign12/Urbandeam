@@ -29,6 +29,7 @@ export default async function HomePage({ params }: Props) {
   const { locale } = await params
   const products = await getProducts()
   const popular = products.slice(0, 4)
+  // On affiche max 4 produits populaires en grille 4 colonnes sur desktop
 
   const categories = [
     {
@@ -129,7 +130,7 @@ export default async function HomePage({ params }: Props) {
               </Link>
             </div>
 
-            <ProductGrid products={popular} locale={locale} columns={4} priorityCount={4} />
+            <ProductGrid products={popular} locale={locale} columns={4} priorityCount={4} cardSize="large" />
           </div>
         </section>
 
@@ -179,7 +180,7 @@ export default async function HomePage({ params }: Props) {
                   {isFr ? 'Tous nos produits' : 'All our products'}
                 </h2>
               </div>
-              <ProductGrid products={products} locale={locale} columns={4} priorityCount={0} />
+              <ProductGrid products={products} locale={locale} columns={4} priorityCount={0} cardSize="large" />
             </div>
           </section>
         )}
@@ -230,9 +231,9 @@ export default async function HomePage({ params }: Props) {
           pointer-events: none;
         }
         .ud-container {
-          max-width: 1100px;
+          max-width: 1360px;
           margin: 0 auto;
-          padding: 0 60px;
+          padding: 0 48px;
         }
         .ud-hero__badge {
           display: inline-flex;
@@ -403,6 +404,9 @@ export default async function HomePage({ params }: Props) {
         }
 
         /* ── RESPONSIVE ── */
+        @media (max-width: 1024px) {
+          .ud-container { padding: 0 32px; }
+        }
         @media (max-width: 768px) {
           .ud-container { padding: 0 20px; }
           .ud-category-grid { grid-template-columns: 1fr; }

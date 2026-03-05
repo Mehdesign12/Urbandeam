@@ -26,6 +26,8 @@ type Props = {
   productId: string
   locale: string
   label: string
+  _autoOpen?: boolean
+  _onAutoClose?: () => void
 }
 
 // ─── CSS global injecté une seule fois ────────────────────────────────────────
@@ -422,8 +424,8 @@ function SuccessScreen({
 }
 
 // ─── Composant principal ───────────────────────────────────────────────────────
-export default function BuyButton({ productId, locale, label }: Props) {
-  const [isOpen,          setIsOpen]          = useState(false)
+export default function BuyButton({ productId, locale, label, _autoOpen, _onAutoClose }: Props) {
+  const [isOpen,          setIsOpen]          = useState(_autoOpen ?? false)
   const [step,            setStep]            = useState<'email' | 'payment' | 'success'>('email')
   const [email,           setEmail]           = useState('')
   const [emailErr,        setEmailErr]        = useState('')
@@ -484,8 +486,9 @@ export default function BuyButton({ productId, locale, label }: Props) {
       setStep('email'); setEmail(''); setEmailErr('')
       setClientSecret(null); setPiId(null)
       setDownloadToken(null); setGeneralErr(null)
+      _onAutoClose?.()
     }, 320)
-  }, [])
+  }, [_onAutoClose]) // eslint-disable-line
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -643,13 +646,15 @@ export default function BuyButton({ productId, locale, label }: Props) {
 
   return (
     <>
-      {/* Bouton déclencheur */}
-      <button onClick={() => setIsOpen(true)} className="ud-buy-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-        </svg>
-        {label}
-      </button>
+      {/* Bouton déclencheur — masqué en mode headless (CartBuyModal) */}
+      {!_autoOpen && (
+        <button onClick={() => setIsOpen(true)} className="ud-buy-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+          {label}
+        </button>
+      )}
 
       {/* Portal — rendu directement sur document.body, HORS de tout stacking context */}
       {mounted && isOpen && createPortal(modalContent, document.body)}
@@ -677,5 +682,34 @@ export default function BuyButton({ productId, locale, label }: Props) {
         .ud-buy-btn:active { transform: scale(0.99); }
       `}</style>
     </>
+  )
+}
+
+// ─── Version "headless" pour le Cart ──────────────────────────────────────────
+// Rendu dans CartProvider — s'ouvre via l'event ud:open-checkout
+export function CartBuyModal({ locale }: { locale: string }) {
+  const [productId, setProductId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ productId: string; locale: string }>).detail
+      if (detail.locale === locale || true) { // accepter tous les locales
+        setProductId(detail.productId)
+      }
+    }
+    window.addEventListener('ud:open-checkout', handler)
+    return () => window.removeEventListener('ud:open-checkout', handler)
+  }, [locale])
+
+  if (!productId) return null
+
+  return (
+    <BuyButton
+      productId={productId}
+      locale={locale}
+      label=""
+      _autoOpen
+      _onAutoClose={() => setProductId(null)}
+    />
   )
 }

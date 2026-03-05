@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { CartBuyModal } from './BuyButton'
 
 export type CartItem = {
   id: string
@@ -61,6 +62,9 @@ export function CartProvider({ children, locale }: { children: ReactNode; locale
       isOpen,
     }}>
       {children}
+
+      {/* Modal de paiement déclenché par le cart "Check out" */}
+      <CartBuyModal locale={locale} />
 
       {/* ── Cart Sidebar overlay ── */}
       {isOpen && (
@@ -148,13 +152,23 @@ export function CartProvider({ children, locale }: { children: ReactNode; locale
                 <p style={{ fontSize: '12px', color: '#9CA3AF', marginBottom: '16px' }}>
                   {locale === 'fr' ? 'Taxes calculées lors du paiement.' : 'Taxes and shipping calculated at checkout.'}
                 </p>
-                <Link
-                  href={`/${locale}/checkout`}
+                <button
                   className="ud-cart__checkout"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    if (items.length === 0) return
+                    // Fermer le cart
+                    setIsOpen(false)
+                    // Déclencher le modal de paiement sur le premier produit
+                    const first = items[0]
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('ud:open-checkout', {
+                        detail: { productId: first.id, locale: first.locale }
+                      }))
+                    }, 320) // laisser le cart se fermer d'abord
+                  }}
                 >
                   {locale === 'fr' ? 'Commander' : 'Check out'}
-                </Link>
+                </button>
               </div>
             </>
           )}

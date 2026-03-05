@@ -11,13 +11,14 @@ type Props = {
   product: Product
   locale: string
   priority?: boolean
+  cardSize?: 'default' | 'large'
 }
 
 const CATEGORY_EMOJI: Record<string, string> = {
   excel: '📊', notion: '📋', pdf: '📄',
 }
 
-export default function ProductCard({ product, locale, priority = false }: Props) {
+export default function ProductCard({ product, locale, priority = false, cardSize = 'default' }: Props) {
   const [hovered, setHovered] = useState(false)
   const { addItem } = useCart()
 
@@ -40,7 +41,7 @@ export default function ProductCard({ product, locale, priority = false }: Props
   return (
     <Link
       href={`/${locale}/products/${product.slug}`}
-      className="ud-card"
+      className={`ud-card${cardSize === 'large' ? ' ud-card--large' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -126,6 +127,18 @@ export default function ProductCard({ product, locale, priority = false }: Props
           overflow: hidden;
           margin-bottom: 12px;
         }
+        /* Large variant — image légèrement plus haute (110%), coins plus arrondis */
+        .ud-card--large .ud-card__img-wrap {
+          padding-bottom: 110%;
+          border-radius: 14px;
+          margin-bottom: 14px;
+        }
+        .ud-card--large .ud-card__title {
+          font-size: 15px;
+        }
+        .ud-card--large .ud-card__price {
+          font-size: 15px;
+        }
         .ud-card__placeholder {
           position: absolute; inset: 0;
           display: flex; align-items: center; justify-content: center;
@@ -167,7 +180,7 @@ export default function ProductCard({ product, locale, priority = false }: Props
         .ud-card__info { padding: 0 2px; }
         .ud-card__title {
           font-size: 14px; font-weight: 400; color: #0A0A0A;
-          line-height: 1.4; margin-bottom: 4px;
+          line-height: 1.4; margin-bottom: 6px;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;

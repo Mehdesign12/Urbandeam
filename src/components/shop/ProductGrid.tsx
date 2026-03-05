@@ -5,10 +5,17 @@ type Props = {
   products: Product[]
   locale: string
   columns?: 2 | 3 | 4 | 5
-  priorityCount?: number  // nb de premières cards en priority (LCP)
+  priorityCount?: number
+  cardSize?: 'default' | 'large'
 }
 
-export default function ProductGrid({ products, locale, columns = 4, priorityCount = 2 }: Props) {
+export default function ProductGrid({
+  products,
+  locale,
+  columns = 4,
+  priorityCount = 2,
+  cardSize = 'default',
+}: Props) {
   if (!products.length) {
     return (
       <div style={{
@@ -22,39 +29,48 @@ export default function ProductGrid({ products, locale, columns = 4, priorityCou
     )
   }
 
+  const gap = cardSize === 'large' ? '28px' : '20px'
+
   return (
     <>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: '20px',
-      }} className={`product-grid product-grid-${columns}`}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${columns}, 1fr)`,
+          gap,
+        }}
+        className={`product-grid product-grid-${columns}${cardSize === 'large' ? ' product-grid--large' : ''}`}
+      >
         {products.map((product, i) => (
           <ProductCard
             key={product.id}
             product={product}
             locale={locale}
             priority={i < priorityCount}
+            cardSize={cardSize}
           />
         ))}
       </div>
 
       <style>{`
-        @media (max-width: 1024px) {
+        /* ── Responsive breakpoints ── */
+        @media (max-width: 1200px) {
           .product-grid-5 { grid-template-columns: repeat(4, 1fr) !important; }
           .product-grid-4 { grid-template-columns: repeat(3, 1fr) !important; }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
+          .product-grid-5,
+          .product-grid-4 { grid-template-columns: repeat(3, 1fr) !important; }
+          .product-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 640px) {
           .product-grid-5,
           .product-grid-4,
-          .product-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+          .product-grid-3 { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
           .product-grid-2 { grid-template-columns: 1fr !important; }
         }
-        @media (max-width: 480px) {
-          .product-grid-5,
-          .product-grid-4,
-          .product-grid-3,
-          .product-grid-2 { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+        @media (max-width: 400px) {
+          .product-grid--large { gap: 12px !important; }
         }
       `}</style>
     </>
