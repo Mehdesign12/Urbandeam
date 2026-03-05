@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ProductGrid from '@/components/shop/ProductGrid'
 import Link from 'next/link'
+import { WarpBackground } from '@/components/ui/WarpBackground'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -69,9 +70,19 @@ export default async function HomePage({ params }: Props) {
 
       <main>
         {/* ═══════════════════════════════════════
-            HERO
+            HERO — WarpBackground
         ═══════════════════════════════════════ */}
-        <section className="ud-hero">
+        <WarpBackground
+          beamsPerSide={5}
+          beamSize={10}
+          beamDuration={4}
+          beamDelayMax={4}
+          beamDelayMin={0.5}
+          perspective={150}
+          gridColor="rgba(255,255,255,0.055)"
+          beamColor="rgba(255,255,255,0.55)"
+          className="ud-hero"
+        >
           <div className="ud-hero__deco" />
 
           <div className="ud-container">
@@ -108,7 +119,7 @@ export default async function HomePage({ params }: Props) {
               {isFr ? 'Paiement sécurisé · Téléchargement immédiat · Support inclus' : 'Secure payment · Instant download · Support included'}
             </div>
           </div>
-        </section>
+        </WarpBackground>
 
         {/* ═══════════════════════════════════════
             POPULAIRES
@@ -228,18 +239,14 @@ export default async function HomePage({ params }: Props) {
         .ud-hero {
           background: var(--color-black);
           color: white;
-          padding: 56px 0 48px;
+          padding: 48px 0 40px;
           position: relative;
           overflow: hidden;
+          width: 100%;
         }
-        @media (min-width: 768px) { .ud-hero { padding: 90px 0 80px; } }
+        @media (min-width: 768px) { .ud-hero { padding: 72px 0 60px; } }
 
-        .ud-hero__deco {
-          position: absolute; right: -120px; top: -120px;
-          width: 500px; height: 500px; border-radius: 50%;
-          background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
-          pointer-events: none;
-        }
+        .ud-hero__deco { display: none; }
         .ud-hero__badge {
           display: inline-flex; align-items: center; gap: 6px;
           background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
