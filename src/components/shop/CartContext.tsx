@@ -271,6 +271,12 @@ export function CartProvider({ children, locale }: { children: ReactNode; locale
 
         @media (max-width: 480px) {
           .ud-cart { width: 100vw; }
+          .ud-cart__header { padding: 16px 16px; }
+          .ud-cart__items { padding: 12px 16px; gap: 12px; }
+          .ud-cart__footer { padding: 12px 16px 20px; }
+          .ud-cart__item-img { width: 56px; height: 56px; }
+          .ud-cart__item-name { font-size: 12px; }
+          .ud-cart__checkout { padding: 14px; font-size: 14px; }
         }
       `}</style>
     </CartContext.Provider>

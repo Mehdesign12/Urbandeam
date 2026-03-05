@@ -141,43 +141,50 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       <style>{`
         .ud-catalog {
           max-width: 1280px; margin: 0 auto;
-          padding: 40px 24px 80px;
+          padding: 24px 16px 60px;
         }
+        @media (min-width: 640px) { .ud-catalog { padding: 32px 24px 80px; } }
+        @media (min-width: 1024px) { .ud-catalog { padding: 40px 40px 80px; } }
+
         .ud-catalog__title {
-          font-size: 28px; font-weight: 700; color: #0A0A0A;
-          margin-bottom: 28px;
+          font-size: 24px; font-weight: 700; color: #0A0A0A;
+          margin-bottom: 20px;
           font-family: var(--font-heading);
           letter-spacing: -0.02em;
         }
+        @media (min-width: 768px) { .ud-catalog__title { font-size: 28px; margin-bottom: 28px; } }
+
         .ud-catalog__toolbar {
           display: flex; align-items: center;
           justify-content: space-between;
-          gap: 16px;
-          padding-bottom: 20px;
+          gap: 10px;
+          padding-bottom: 16px;
           border-bottom: 1px solid #EFEFEF;
           flex-wrap: wrap;
         }
+        @media (min-width: 640px) { .ud-catalog__toolbar { gap: 16px; padding-bottom: 20px; } }
+
         .ud-catalog__toolbar-right {
-          display: flex; align-items: center; gap: 12px;
+          display: flex; align-items: center; gap: 8px;
           margin-left: auto;
         }
+        @media (min-width: 640px) { .ud-catalog__toolbar-right { gap: 12px; } }
+
         .ud-catalog__count {
-          font-size: 13px; color: #6B7280;
+          font-size: 12px; color: #6B7280;
           white-space: nowrap;
         }
+        @media (min-width: 640px) { .ud-catalog__count { font-size: 13px; } }
+
         .ud-catalog__filter-btn {
           display: inline-flex; align-items: center; gap: 6px;
-          padding: 7px 14px; border: 1px solid #E5E5E5;
-          border-radius: 6px; font-size: 13px; color: #0A0A0A;
+          padding: 6px 12px; border: 1px solid #E5E5E5;
+          border-radius: 6px; font-size: 12px; color: #0A0A0A;
           background: white; cursor: pointer;
           font-family: inherit; transition: border-color 0.12s;
         }
+        @media (min-width: 640px) { .ud-catalog__filter-btn { font-size: 13px; padding: 7px 14px; } }
         .ud-catalog__filter-btn:hover { border-color: #0A0A0A; }
-
-        @media (max-width: 768px) {
-          .ud-catalog { padding: 24px 16px 60px; }
-          .ud-catalog__toolbar { gap: 10px; }
-        }
       `}</style>
     </>
   )

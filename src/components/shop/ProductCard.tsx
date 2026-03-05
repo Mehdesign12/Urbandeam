@@ -177,6 +177,14 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           opacity: 1; transform: scale(1);
         }
         .ud-card__cart-btn:hover { background: #0A0A0A; color: white; }
+
+        /* Sur mobile : bouton panier toujours visible */
+        @media (hover: none), (max-width: 768px) {
+          .ud-card__cart-btn {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+          }
+        }
         .ud-card__info { padding: 0 2px; }
         .ud-card__title {
           font-size: 14px; font-weight: 400; color: #0A0A0A;

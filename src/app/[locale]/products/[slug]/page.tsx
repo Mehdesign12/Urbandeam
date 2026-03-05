@@ -247,25 +247,40 @@ export default async function ProductPage({ params }: Props) {
       <style>{`
         .ud-detail {
           max-width: 1280px; margin: 0 auto;
-          padding: 40px 24px 60px;
+          padding: 24px 16px 80px;
         }
+        @media (min-width: 640px) { .ud-detail { padding: 32px 24px 80px; } }
+        @media (min-width: 1024px) { .ud-detail { padding: 40px 40px 60px; } }
+
         .ud-detail__grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 64px;
+          grid-template-columns: 1fr;
+          gap: 24px;
           align-items: start;
-          margin-bottom: 64px;
+          margin-bottom: 48px;
         }
-        .ud-detail__info { position: sticky; top: 80px; }
+        @media (min-width: 900px) {
+          .ud-detail__grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            margin-bottom: 64px;
+          }
+        }
+        .ud-detail__info { position: static; }
+        @media (min-width: 900px) { .ud-detail__info { position: sticky; top: 80px; } }
+
         .ud-detail__title {
-          font-size: 24px; font-weight: 700; color: #0A0A0A;
-          line-height: 1.3; margin-bottom: 12px;
+          font-size: 22px; font-weight: 700; color: #0A0A0A;
+          line-height: 1.3; margin-bottom: 10px;
           font-family: var(--font-heading); letter-spacing: -0.02em;
         }
+        @media (min-width: 768px) { .ud-detail__title { font-size: 26px; } }
+
         .ud-detail__price-row {
           display: flex; align-items: baseline; gap: 10px;
-          margin-bottom: 20px;
+          margin-bottom: 16px; flex-wrap: wrap;
         }
+        @media (min-width: 768px) { .ud-detail__price-row { margin-bottom: 20px; } }
         .ud-detail__price { font-size: 20px; font-weight: 500; color: #0A0A0A; }
         .ud-detail__price-original { font-size: 16px; color: #9CA3AF; text-decoration: line-through; }
         .ud-detail__badge-sale {
@@ -275,12 +290,12 @@ export default async function ProductPage({ params }: Props) {
         }
         .ud-detail__bundle {
           display: flex; align-items: center; gap: 12px;
-          padding: 14px 16px; background: #F9FAFB;
+          padding: 12px 14px; background: #F9FAFB;
           border: 1px solid #E5E7EB; border-radius: 10px;
-          margin-bottom: 20px;
+          margin-bottom: 16px;
         }
         .ud-detail__bundle-img {
-          width: 48px; height: 48px; border-radius: 6px;
+          width: 44px; height: 44px; border-radius: 6px;
           background: #E5E7EB; flex-shrink: 0;
           overflow: hidden; position: relative;
           display: flex; align-items: center; justify-content: center;
@@ -288,44 +303,40 @@ export default async function ProductPage({ params }: Props) {
         .ud-detail__bundle-title { font-size: 13px; font-weight: 600; color: #0A0A0A; }
         .ud-detail__bundle-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
         .ud-detail__promo-box {
-          margin: 16px 0; padding: 12px 16px;
+          margin: 12px 0; padding: 10px 14px;
           background: #F9FAFB; border: 1px solid #E5E7EB;
           border-radius: 8px; font-size: 13px; color: #374151;
           text-align: center;
         }
-        .ud-detail__desc-section { margin: 20px 0; }
+        .ud-detail__desc-section { margin: 16px 0; }
         .ud-detail__benefits {
           list-style: none; display: flex; flex-direction: column; gap: 8px;
-          padding-top: 16px; border-top: 1px solid #F0F0F0;
+          padding-top: 14px; border-top: 1px solid #F0F0F0;
         }
         .ud-detail__benefit-item {
           display: flex; align-items: center; gap: 10px;
           font-size: 13px; color: #374151;
         }
         .ud-detail__faq {
-          padding-top: 60px; border-top: 1px solid #F0F0F0;
+          padding-top: 48px; border-top: 1px solid #F0F0F0;
           max-width: 720px;
         }
+        @media (min-width: 768px) { .ud-detail__faq { padding-top: 60px; } }
         .ud-detail__section-title {
-          font-size: 22px; font-weight: 700; color: #0A0A0A;
-          letter-spacing: -0.02em; margin-bottom: 28px;
+          font-size: 20px; font-weight: 700; color: #0A0A0A;
+          letter-spacing: -0.02em; margin-bottom: 20px;
           font-family: var(--font-heading);
         }
+        @media (min-width: 768px) { .ud-detail__section-title { font-size: 22px; margin-bottom: 28px; } }
         .ud-detail__related {
-          background: #F9FAFB; padding: 60px 0;
+          background: #F9FAFB; padding: 48px 0;
           border-top: 1px solid #E5E7EB;
         }
+        @media (min-width: 768px) { .ud-detail__related { padding: 60px 0; } }
         .ud-detail__related-inner {
-          max-width: 1280px; margin: 0 auto; padding: 0 24px;
+          max-width: 1280px; margin: 0 auto; padding: 0 16px;
         }
-
-        @media (max-width: 900px) {
-          .ud-detail__grid { grid-template-columns: 1fr; gap: 32px; }
-          .ud-detail__info { position: static; }
-        }
-        @media (max-width: 640px) {
-          .ud-detail { padding: 24px 16px 80px; }
-        }
+        @media (min-width: 640px) { .ud-detail__related-inner { padding: 0 24px; } }
       `}</style>
     </>
   )

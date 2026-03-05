@@ -315,7 +315,12 @@ export default function Navbar({ locale }: { locale: string }) {
         @media (max-width: 768px) {
           .ud-nav__links { display: none !important; }
           .ud-nav__burger { display: flex !important; }
-          .ud-nav__inner { gap: 8px; padding: 0 16px; }
+          .ud-nav__inner { gap: 4px; padding: 0 12px; }
+          /* Masquer la devise sur très petit écran */
+          .ud-nav__currency { display: none; }
+        }
+        @media (max-width: 360px) {
+          .ud-nav__inner { padding: 0 8px; }
         }
       `}</style>
     </>

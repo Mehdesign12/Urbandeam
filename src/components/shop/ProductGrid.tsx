@@ -66,11 +66,14 @@ export default function ProductGrid({
         @media (max-width: 640px) {
           .product-grid-5,
           .product-grid-4,
-          .product-grid-3 { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
+          .product-grid-3 { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
           .product-grid-2 { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 400px) {
-          .product-grid--large { gap: 12px !important; }
+          .product-grid--large { gap: 10px !important; }
+          .product-grid-5,
+          .product-grid-4,
+          .product-grid-3 { gap: 10px !important; }
         }
       `}</style>
     </>

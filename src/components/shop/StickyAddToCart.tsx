@@ -66,28 +66,33 @@ export default function StickyAddToCart({ productId, slug, title, price, imageUr
         .ud-sticky--visible { transform: translateY(0); }
         .ud-sticky__inner {
           max-width: 1280px; margin: 0 auto;
-          padding: 12px 24px;
+          padding: 10px 16px;
           display: flex; align-items: center;
-          justify-content: space-between; gap: 16px;
+          justify-content: space-between; gap: 12px;
+        }
+        @media (min-width: 640px) {
+          .ud-sticky__inner { padding: 12px 24px; gap: 16px; }
         }
         .ud-sticky__left {
-          display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;
+          display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;
         }
         .ud-sticky__img {
-          width: 48px; height: 48px; border-radius: 8px;
+          width: 44px; height: 44px; border-radius: 8px;
           background: #EFEFEF; flex-shrink: 0;
           overflow: hidden; position: relative;
           display: flex; align-items: center; justify-content: center;
         }
         .ud-sticky__title {
-          font-size: 14px; font-weight: 500; color: #0A0A0A;
+          font-size: 13px; font-weight: 500; color: #0A0A0A;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+        @media (min-width: 640px) { .ud-sticky__title { font-size: 14px; } }
         .ud-sticky__price { font-size: 13px; color: #6B7280; margin-top: 2px; }
 
-        @media (max-width: 640px) {
-          .ud-sticky__inner { padding: 12px 16px; }
+        /* Sur mobile : masquer texte/image, garder seulement le bouton pleine largeur */
+        @media (max-width: 480px) {
           .ud-sticky__left { display: none; }
+          .ud-sticky__inner { padding: 10px 16px; }
         }
       `}</style>
     </>

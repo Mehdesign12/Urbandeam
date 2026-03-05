@@ -70,8 +70,9 @@ export async function POST(req: NextRequest) {
         .map(p => ({
           id: p!.id,
           title: (p!.title as Record<string, string>)?.[loc]
-            ?? (p!.title as Record<string, string>)?.['fr']
-            ?? p!.slug,
+            || (p!.title as Record<string, string>)?.['fr']
+            || (p!.title as Record<string, string>)?.['en']
+            || p!.slug,
           price: p!.price,
           image_url: p!.image_url ?? null,
           slug: p!.slug,
@@ -93,8 +94,9 @@ export async function POST(req: NextRequest) {
       products = [{
         id: p.id,
         title: (p.title as Record<string, string>)?.[loc]
-          ?? (p.title as Record<string, string>)?.['fr']
-          ?? p.slug,
+          || (p.title as Record<string, string>)?.['fr']
+          || (p.title as Record<string, string>)?.['en']
+          || p.slug,
         price: p.price,
         image_url: p.image_url ?? null,
         slug: p.slug,

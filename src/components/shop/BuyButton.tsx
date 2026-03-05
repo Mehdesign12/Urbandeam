@@ -129,7 +129,7 @@ const MODAL_CSS = `
     padding: 12px 14px;
     border: 1.5px solid #E5E7EB;
     border-radius: 10px;
-    font-size: 15px;
+    font-size: 16px; /* 16px minimum pour éviter le zoom automatique sur iOS */
     font-family: inherit;
     color: #0A0A0A;
     outline: none;
@@ -286,9 +286,16 @@ const MODAL_CSS = `
     .udm-box {
       max-width: 100%;
       border-radius: 20px 20px 0 0;
-      max-height: 96vh;
+      max-height: 92vh;
       animation: udm-sheet-in 0.3s cubic-bezier(0.34,1.3,0.64,1);
     }
+    .udm-header { padding: 16px 16px 0; }
+    .udm-body { padding: 14px 16px 20px; }
+    .udm-success { padding: 22px 16px; }
+    .udm-title { font-size: 18px; }
+    .udm-recap-title { font-size: 13px; }
+    .udm-recap { padding: 10px 12px; }
+    .udm-btn-primary { padding: 13px 16px; font-size: 14px; }
   }
   @keyframes udm-sheet-in { from { transform: translateY(100%); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
 `
@@ -719,11 +726,15 @@ function SuccessScreenMulti({
 }) {
   const fr = locale === 'fr'
 
-  // Associer chaque token à son produit
-  const items = downloadTokens.map(dt => ({
-    token: dt.token,
-    product: products.find(p => p.id === dt.productId) ?? null,
-  })).filter(i => i.product !== null) as Array<{token: string; product: ProductInfo}>
+  // Associer chaque token à son produit — fallback sur slug si titre vide
+  const items = downloadTokens.map(dt => {
+    const prod = products.find(p => p.id === dt.productId) ?? null
+    if (!prod) return null
+    return {
+      token: dt.token,
+      product: { ...prod, title: prod.title || prod.slug || 'Product' },
+    }
+  }).filter(Boolean) as Array<{token: string; product: ProductInfo}>
 
   return (
     <div className="udm-success">
