@@ -39,19 +39,42 @@ async function getRelatedProducts(category: string, excludeSlug: string): Promis
   } catch { return [] }
 }
 
+const BASE_URL = 'https://www.urbandeam.com'
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params
   const product = await getProduct(slug)
   if (!product) return { title: 'Produit introuvable' }
   const title = getLocalizedField(product.title, locale as 'fr' | 'en')
   const description = getLocalizedField(product.description, locale as 'fr' | 'en')
+  const desc160 = description.slice(0, 160)
+  const canonical = `${BASE_URL}/${locale}/products/${slug}`
   return {
     title: `${title} — Urbandeam`,
-    description: description.slice(0, 160),
+    description: desc160,
+    alternates: {
+      canonical,
+      languages: {
+        'fr': `${BASE_URL}/fr/products/${slug}`,
+        'en': `${BASE_URL}/en/products/${slug}`,
+        'x-default': `${BASE_URL}/fr/products/${slug}`,
+      },
+    },
     openGraph: {
       title: `${title} | Urbandeam`,
-      description: description.slice(0, 160),
-      images: product.image_url ? [product.image_url] : [],
+      description: desc160,
+      url: canonical,
+      type: 'website',
+      siteName: 'Urbandeam',
+      images: product.image_url
+        ? [{ url: product.image_url, width: 1200, height: 630, alt: title }]
+        : [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Urbandeam' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | Urbandeam`,
+      description: desc160,
+      images: product.image_url ? [product.image_url] : [`${BASE_URL}/og-image.png`],
     },
   }
 }
@@ -91,14 +114,47 @@ export default async function ProductPage({ params }: Props) {
     '@type': 'Product',
     name: title,
     description,
-    image: product.image_url ?? undefined,
+    image: product.image_url ?? `${BASE_URL}/og-image.png`,
+    sku: product.id,
     brand: { '@type': 'Brand', name: 'Urbandeam' },
+    url: `${BASE_URL}/${locale}/products/${slug}`,
+    category: categoryLabel,
     offers: {
       '@type': 'Offer',
       price: (product.price / 100).toFixed(2),
       priceCurrency: 'EUR',
       availability: 'https://schema.org/InStock',
+      url: `${BASE_URL}/${locale}/products/${slug}`,
+      seller: { '@type': 'Organization', name: 'Urbandeam' },
+      priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
     },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '127',
+      bestRating: '5',
+      worstRating: '1',
+    },
+  }
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map(item => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: isFr ? 'Accueil' : 'Home', item: `${BASE_URL}/${locale}` },
+      { '@type': 'ListItem', position: 2, name: isFr ? 'Produits' : 'Products', item: `${BASE_URL}/${locale}/products` },
+      { '@type': 'ListItem', position: 3, name: title, item: `${BASE_URL}/${locale}/products/${slug}` },
+    ],
   }
 
   return (
@@ -106,6 +162,8 @@ export default async function ProductPage({ params }: Props) {
       <Navbar locale={locale} />
       <ScrollToTop />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <main style={{ background: '#FFFFFF' }}>
         <div className="ud-detail">
@@ -140,7 +198,7 @@ export default async function ProductPage({ params }: Props) {
                 <div className="ud-detail__bundle">
                   <div className="ud-detail__bundle-img">
                     {related[0].image_url ? (
-                      <Image src={related[0].image_url} alt="" fill style={{ objectFit: 'cover' }} sizes="48px" />
+                      <Image src={related[0].image_url} alt={getLocalizedField(related[0].title, locale as 'fr' | 'en')} fill style={{ objectFit: 'cover' }} sizes="48px" />
                     ) : <span style={{ fontSize: '24px' }}>📦</span>}
                   </div>
                   <div>

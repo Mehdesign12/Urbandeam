@@ -14,13 +14,35 @@ type Props = {
   searchParams: Promise<{ cat?: string; sort?: string; view?: string }>
 }
 
+const BASE_URL = 'https://www.urbandeam.com'
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
+  const isFr = locale === 'fr'
+  const canonical = `${BASE_URL}/${locale}/products`
   return {
-    title: locale === 'fr' ? 'Tous nos produits — Urbandeam' : 'All Products — Urbandeam',
-    description: locale === 'fr'
-      ? 'Templates Excel, PDF et Notion pour le développement personnel, la productivité et la gestion financière.'
-      : 'Excel, PDF and Notion templates for personal development, productivity and financial management.',
+    title: isFr ? 'Tous nos templates — Urbandeam' : 'All Templates — Urbandeam',
+    description: isFr
+      ? 'Parcourez tous nos templates Excel, PDF et Notion pour le développement personnel, la productivité et la gestion financière. Téléchargement immédiat.'
+      : 'Browse all our Excel, PDF and Notion templates for personal development, productivity and financial management. Instant download.',
+    alternates: {
+      canonical,
+      languages: {
+        'fr': `${BASE_URL}/fr/products`,
+        'en': `${BASE_URL}/en/products`,
+        'x-default': `${BASE_URL}/fr/products`,
+      },
+    },
+    openGraph: {
+      title: isFr ? 'Tous nos templates | Urbandeam' : 'All Templates | Urbandeam',
+      description: isFr
+        ? 'Templates Excel, PDF et Notion pour booster votre productivité.'
+        : 'Excel, PDF and Notion templates to boost your productivity.',
+      url: canonical,
+      type: 'website',
+      siteName: 'Urbandeam',
+      images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Urbandeam Templates' }],
+    },
   }
 }
 

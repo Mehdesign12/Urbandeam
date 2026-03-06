@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import type { Product } from '@/types'
+import type { Metadata } from 'next'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ProductGrid from '@/components/shop/ProductGrid'
@@ -7,8 +8,49 @@ import Link from 'next/link'
 import { WarpBackground } from '@/components/ui/WarpBackground'
 import { ShineBorder } from '@/components/ui/ShineBorder'
 
+const BASE_URL = 'https://www.urbandeam.com'
+
 type Props = {
   params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params
+  const isFr = locale === 'fr'
+  const canonical = `${BASE_URL}/${locale}`
+  return {
+    title: isFr
+      ? 'Urbandeam — Templates Excel, PDF & Notion pour le développement personnel'
+      : 'Urbandeam — Excel, PDF & Notion Templates for Personal Development',
+    description: isFr
+      ? 'Découvrez nos templates digitaux premium (Excel, PDF, Notion) pour booster votre productivité, gérer vos finances et atteindre vos objectifs.'
+      : 'Discover our premium digital templates (Excel, PDF, Notion) to boost your productivity, manage your finances and achieve your goals.',
+    alternates: {
+      canonical,
+      languages: {
+        'fr': `${BASE_URL}/fr`,
+        'en': `${BASE_URL}/en`,
+        'x-default': BASE_URL,
+      },
+    },
+    openGraph: {
+      title: isFr ? 'Urbandeam — Templates Premium' : 'Urbandeam — Premium Templates',
+      description: isFr
+        ? 'Templates Excel, PDF & Notion pour développer votre potentiel.'
+        : 'Excel, PDF & Notion templates to unlock your potential.',
+      url: canonical,
+      type: 'website',
+      siteName: 'Urbandeam',
+      locale: isFr ? 'fr_FR' : 'en_US',
+      images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Urbandeam' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Urbandeam — Templates Excel, PDF & Notion',
+      description: isFr ? 'Templates premium pour développer votre potentiel.' : 'Premium templates to unlock your potential.',
+      images: [`${BASE_URL}/og-image.png`],
+    },
+  }
 }
 
 async function getProducts(): Promise<Product[]> {
@@ -65,8 +107,21 @@ export default async function HomePage({ params }: Props) {
 
   const isFr = locale === 'fr'
 
+  const homepageJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: isFr ? 'Urbandeam — Templates digitaux premium' : 'Urbandeam — Premium Digital Templates',
+    description: isFr
+      ? 'Templates Excel, PDF & Notion pour le développement personnel et la productivité.'
+      : 'Excel, PDF & Notion templates for personal development and productivity.',
+    url: `${BASE_URL}/${locale}`,
+    inLanguage: locale,
+    publisher: { '@type': 'Organization', name: 'Urbandeam', url: BASE_URL },
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageJsonLd) }} />
       <Navbar locale={locale} />
 
       <main>
