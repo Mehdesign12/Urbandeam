@@ -86,9 +86,12 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth retiré — cause un décalage visible au chargement
+     de page sur mobile (Next.js router scroll). Laissé à 'auto'. */
+  scroll-behavior: auto;
+  scroll-padding-top: 0;
   -webkit-text-size-adjust: 100%;
-  overflow-x: hidden; /* bloque le scroll horizontal au niveau racine */
+  overflow-x: hidden;
 }
 
 body {

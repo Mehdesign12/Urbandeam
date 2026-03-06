@@ -11,6 +11,7 @@ import BuyButton from '@/components/shop/BuyButton'
 import FaqAccordion from '@/components/shop/FaqAccordion'
 import ProductGallery from '@/components/shop/ProductGallery'
 import StickyAddToCart from '@/components/shop/StickyAddToCart'
+import ScrollToTop from '@/components/ui/ScrollToTop'
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>
@@ -103,6 +104,7 @@ export default async function ProductPage({ params }: Props) {
   return (
     <>
       <Navbar locale={locale} />
+      <ScrollToTop />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <main style={{ background: '#FFFFFF' }}>

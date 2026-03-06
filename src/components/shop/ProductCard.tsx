@@ -25,7 +25,7 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
   const title = getLocalizedField(product.title, locale as 'fr' | 'en', product.slug)
   const price = getPriceDisplay(product.price, product.price_original)
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
     e.stopPropagation()
     addItem({
@@ -42,6 +42,7 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
     <Link
       href={`/${locale}/products/${product.slug}`}
       className={`ud-card${cardSize === 'large' ? ' ud-card--large' : ''}`}
+      // hover uniquement sur appareil pointeur (desktop) — évite le 300ms delay iOS
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -66,15 +67,25 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           </div>
         )}
 
-        {/* Flèches navigation (hover) */}
+        {/* Flèches navigation — desktop uniquement */}
         {hovered && (
           <>
-            <button className="ud-card__arrow ud-card__arrow--left" onClick={e => e.preventDefault()} aria-label="Précédent">
+            <button
+              className="ud-card__arrow ud-card__arrow--left"
+              onClick={e => e.preventDefault()}
+              tabIndex={-1}
+              aria-hidden="true"
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 18l-6-6 6-6"/>
               </svg>
             </button>
-            <button className="ud-card__arrow ud-card__arrow--right" onClick={e => e.preventDefault()} aria-label="Suivant">
+            <button
+              className="ud-card__arrow ud-card__arrow--right"
+              onClick={e => e.preventDefault()}
+              tabIndex={-1}
+              aria-hidden="true"
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 18l6-6-6-6"/>
               </svg>
@@ -89,17 +100,24 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           </span>
         )}
 
-        {/* Bouton add to cart (bas droit) */}
+        {/* Bouton add to cart
+            - Sur desktop (hover) : opacity animée
+            - Sur mobile : toujours visible MAIS pointer-events uniquement sur
+              le bouton lui-même via onTouchEnd pour éviter d'intercepter le tap du Link */}
         <button
           className={`ud-card__cart-btn${hovered ? ' ud-card__cart-btn--visible' : ''}`}
           onClick={handleAddToCart}
+          onTouchEnd={handleAddToCart}
           aria-label="Ajouter au panier"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
           </svg>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
         </button>
       </div>
@@ -118,6 +136,9 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
       <style>{`
         .ud-card {
           display: block; text-decoration: none; color: inherit;
+          /* Réponse tactile immédiate sur iOS/Android */
+          -webkit-tap-highlight-color: transparent;
+          cursor: pointer;
         }
         .ud-card__img-wrap {
           position: relative;
@@ -127,23 +148,22 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           overflow: hidden;
           margin-bottom: 12px;
         }
-        /* Large variant — image légèrement plus haute (110%), coins plus arrondis */
+        /* Large variant */
         .ud-card--large .ud-card__img-wrap {
           padding-bottom: 110%;
           border-radius: 14px;
           margin-bottom: 14px;
         }
-        .ud-card--large .ud-card__title {
-          font-size: 15px;
-        }
-        .ud-card--large .ud-card__price {
-          font-size: 15px;
-        }
+        .ud-card--large .ud-card__title { font-size: 15px; }
+        .ud-card--large .ud-card__price { font-size: 15px; }
+
         .ud-card__placeholder {
           position: absolute; inset: 0;
           display: flex; align-items: center; justify-content: center;
           font-size: 56px;
         }
+
+        /* Flèches — desktop uniquement */
         .ud-card__arrow {
           position: absolute; top: 50%; transform: translateY(-50%);
           width: 28px; height: 28px; border-radius: 50%;
@@ -153,16 +173,21 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           color: #0A0A0A; transition: background 0.1s;
         }
         .ud-card__arrow:hover { background: #F5F5F5; }
-        .ud-card__arrow--left { left: 8px; }
+        .ud-card__arrow--left  { left: 8px; }
         .ud-card__arrow--right { right: 8px; }
+
+        /* Badge promo */
         .ud-card__badge {
           position: absolute; top: 10px; left: 10px;
           background: #0A0A0A; color: white;
           font-size: 10px; font-weight: 700;
           padding: 3px 8px; border-radius: 4px;
-          letter-spacing: 0.05em;
-          z-index: 2;
+          letter-spacing: 0.05em; z-index: 2;
+          /* Sur mobile le badge ne capte pas les taps */
+          pointer-events: none;
         }
+
+        /* Bouton panier — desktop : apparaît au hover */
         .ud-card__cart-btn {
           position: absolute; bottom: 10px; right: 10px;
           width: 36px; height: 36px; border-radius: 50%;
@@ -171,20 +196,22 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
           color: #0A0A0A; z-index: 2;
           opacity: 0; transform: scale(0.8);
-          transition: opacity 0.15s, transform 0.15s;
+          transition: opacity 0.15s, transform 0.15s, background 0.1s;
         }
         .ud-card__cart-btn--visible {
           opacity: 1; transform: scale(1);
         }
         .ud-card__cart-btn:hover { background: #0A0A0A; color: white; }
 
-        /* Sur mobile : bouton panier toujours visible */
-        @media (hover: none), (max-width: 768px) {
+        /* Mobile : bouton panier visible mais ne bloque PAS le tap vers le Link
+           Il est positionné en bas à droite — une petite zone dédié au panier */
+        @media (hover: none) {
           .ud-card__cart-btn {
             opacity: 1 !important;
             transform: scale(1) !important;
           }
         }
+
         .ud-card__info { padding: 0 2px; }
         .ud-card__title {
           font-size: 14px; font-weight: 400; color: #0A0A0A;
