@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Product } from '@/types'
@@ -19,7 +18,6 @@ const CATEGORY_EMOJI: Record<string, string> = {
 }
 
 export default function ProductCard({ product, locale, priority = false, cardSize = 'default' }: Props) {
-  const [hovered, setHovered] = useState(false)
   const { addItem } = useCart()
 
   const title = getLocalizedField(product.title, locale as 'fr' | 'en', product.slug)
@@ -42,9 +40,6 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
     <Link
       href={`/${locale}/products/${product.slug}`}
       className={`ud-card${cardSize === 'large' ? ' ud-card--large' : ''}`}
-      // hover uniquement sur appareil pointeur (desktop) — évite le 300ms delay iOS
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       {/* ── Image zone ── */}
       <div className="ud-card__img-wrap">
@@ -54,11 +49,7 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
             alt={title}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 22vw"
-            style={{
-              objectFit: 'cover',
-              transition: 'transform 400ms ease',
-              transform: hovered ? 'scale(1.04)' : 'scale(1)',
-            }}
+            style={{ objectFit: 'cover' }}
             priority={priority}
           />
         ) : (
@@ -67,45 +58,18 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           </div>
         )}
 
-        {/* Flèches navigation — desktop uniquement */}
-        {hovered && (
-          <>
-            <button
-              className="ud-card__arrow ud-card__arrow--left"
-              onClick={e => e.preventDefault()}
-              tabIndex={-1}
-              aria-hidden="true"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6"/>
-              </svg>
-            </button>
-            <button
-              className="ud-card__arrow ud-card__arrow--right"
-              onClick={e => e.preventDefault()}
-              tabIndex={-1}
-              aria-hidden="true"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </button>
-          </>
-        )}
-
-        {/* Badge promo */}
+        {/* Badge promo — pointer-events none pour ne pas bloquer les taps */}
         {price.isOnSale && (
-          <span className="ud-card__badge">
+          <span className="ud-card__badge" aria-hidden="true">
             -{price.discountPercent}%
           </span>
         )}
 
         {/* Bouton add to cart
-            - Sur desktop (hover) : opacity animée
-            - Sur mobile : toujours visible MAIS pointer-events uniquement sur
-              le bouton lui-même via onTouchEnd pour éviter d'intercepter le tap du Link */}
+            Desktop : visible au hover via CSS uniquement
+            Mobile  : toujours visible, zone 36×36px isolée en bas à droite */}
         <button
-          className={`ud-card__cart-btn${hovered ? ' ud-card__cart-btn--visible' : ''}`}
+          className="ud-card__cart-btn"
           onClick={handleAddToCart}
           onTouchEnd={handleAddToCart}
           aria-label="Ajouter au panier"
@@ -136,7 +100,6 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
       <style>{`
         .ud-card {
           display: block; text-decoration: none; color: inherit;
-          /* Réponse tactile immédiate sur iOS/Android */
           -webkit-tap-highlight-color: transparent;
           cursor: pointer;
         }
@@ -148,7 +111,6 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           overflow: hidden;
           margin-bottom: 12px;
         }
-        /* Large variant */
         .ud-card--large .ud-card__img-wrap {
           padding-bottom: 110%;
           border-radius: 14px;
@@ -157,37 +119,33 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
         .ud-card--large .ud-card__title { font-size: 15px; }
         .ud-card--large .ud-card__price { font-size: 15px; }
 
+        /* Zoom image — CSS uniquement, sans JS ni state */
+        @media (hover: hover) {
+          .ud-card__img-wrap img {
+            transition: transform 400ms ease;
+          }
+          .ud-card:hover .ud-card__img-wrap img {
+            transform: scale(1.04);
+          }
+        }
+
         .ud-card__placeholder {
           position: absolute; inset: 0;
           display: flex; align-items: center; justify-content: center;
           font-size: 56px;
         }
 
-        /* Flèches — desktop uniquement */
-        .ud-card__arrow {
-          position: absolute; top: 50%; transform: translateY(-50%);
-          width: 28px; height: 28px; border-radius: 50%;
-          background: white; border: none; cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.15); z-index: 2;
-          color: #0A0A0A; transition: background 0.1s;
-        }
-        .ud-card__arrow:hover { background: #F5F5F5; }
-        .ud-card__arrow--left  { left: 8px; }
-        .ud-card__arrow--right { right: 8px; }
-
-        /* Badge promo */
+        /* Badge promo — ne capte jamais les taps */
         .ud-card__badge {
           position: absolute; top: 10px; left: 10px;
           background: #0A0A0A; color: white;
           font-size: 10px; font-weight: 700;
           padding: 3px 8px; border-radius: 4px;
           letter-spacing: 0.05em; z-index: 2;
-          /* Sur mobile le badge ne capte pas les taps */
           pointer-events: none;
         }
 
-        /* Bouton panier — desktop : apparaît au hover */
+        /* Bouton panier */
         .ud-card__cart-btn {
           position: absolute; bottom: 10px; right: 10px;
           width: 36px; height: 36px; border-radius: 50%;
@@ -195,20 +153,22 @@ export default function ProductCard({ product, locale, priority = false, cardSiz
           display: flex; align-items: center; justify-content: center; gap: 1px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
           color: #0A0A0A; z-index: 2;
-          opacity: 0; transform: scale(0.8);
           transition: opacity 0.15s, transform 0.15s, background 0.1s;
         }
-        .ud-card__cart-btn--visible {
-          opacity: 1; transform: scale(1);
+        /* Desktop : caché, apparaît au hover de la card via CSS */
+        @media (hover: hover) {
+          .ud-card__cart-btn {
+            opacity: 0; transform: scale(0.8);
+          }
+          .ud-card:hover .ud-card__cart-btn {
+            opacity: 1; transform: scale(1);
+          }
+          .ud-card__cart-btn:hover { background: #0A0A0A; color: white; }
         }
-        .ud-card__cart-btn:hover { background: #0A0A0A; color: white; }
-
-        /* Mobile : bouton panier visible mais ne bloque PAS le tap vers le Link
-           Il est positionné en bas à droite — une petite zone dédié au panier */
+        /* Mobile (pas de hover) : toujours visible */
         @media (hover: none) {
           .ud-card__cart-btn {
-            opacity: 1 !important;
-            transform: scale(1) !important;
+            opacity: 1; transform: scale(1);
           }
         }
 
