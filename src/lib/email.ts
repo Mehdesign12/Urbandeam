@@ -2,7 +2,7 @@ import { Resend } from 'resend'
 
 // Ne pas instancier au module level — la clé n'est pas disponible au build time.
 const FROM    = process.env.RESEND_FROM_EMAIL   ?? 'noreply@urbandeam.com'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://urbandeam.vercel.app'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.urbandeam.com'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

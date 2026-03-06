@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Produit introuvable' }, { status: 404 })
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://urbandeam.vercel.app'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.urbandeam.com'
     const loc = locale ?? 'fr'
 
     // Titre localisé
