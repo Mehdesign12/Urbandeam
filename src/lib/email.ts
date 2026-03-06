@@ -291,6 +291,9 @@ export async function sendOrderConfirmationEmail(
         ? `Votre fichier est prêt — ${firstTitle}`
         : `Your file is ready — ${firstTitle}`)
 
+  // Log pour diagnostiquer les problèmes d'env en production
+  console.log('[Resend] from:', FROM, '| to:', params.to, '| apiKeySet:', !!apiKey, '| apiKeyPrefix:', apiKey.slice(0, 6))
+
   try {
     const { data, error } = await resend.emails.send({
       from:    `Urban Deam <${FROM}>`,
