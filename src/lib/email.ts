@@ -118,7 +118,7 @@ function buildOrderEmailHtml(p: OrderConfirmationParams): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${fr ? 'Votre commande Urban Deam' : 'Your Urban Deam order'}</title>
+  <title>${fr ? 'Votre commande Urbandeam.com' : 'Your Urbandeam.com order'}</title>
 </head>
 <body style="margin:0;padding:0;background:#F4F4F5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 
@@ -130,7 +130,7 @@ function buildOrderEmailHtml(p: OrderConfirmationParams): string {
           <!-- LOGO -->
           <tr>
             <td align="center" style="padding-bottom:28px;">
-              <img src="${logoUrl}" alt="Urban Deam" height="36"
+              <img src="${logoUrl}" alt="Urbandeam.com" height="36"
                 style="display:block;height:36px;width:auto;" />
             </td>
           </tr>
@@ -230,13 +230,13 @@ function buildOrderEmailHtml(p: OrderConfirmationParams): string {
           <tr>
             <td align="center" style="padding:24px 0 8px;">
               <p style="margin:0 0 6px;font-size:12px;color:#9CA3AF;">
-                © ${new Date().getFullYear()} Urban Deam ·
+                © ${new Date().getFullYear()} Urbandeam.com ·
                 <a href="${APP_URL}" style="color:#9CA3AF;text-decoration:none;">urbandeam.com</a>
               </p>
               <p style="margin:0;font-size:11px;color:#C4C4C4;">
                 ${fr
-                  ? 'Vous recevez cet email car vous avez effectué un achat sur Urban Deam.'
-                  : 'You received this email because you made a purchase on Urban Deam.'}
+                  ? 'Vous recevez cet email car vous avez effectué un achat sur Urbandeam.com.'
+                  : 'You received this email because you made a purchase on Urbandeam.com.'}
               </p>
             </td>
           </tr>
@@ -264,8 +264,8 @@ function buildOrderEmailText(p: OrderConfirmationParams): string {
   })
 
   return fr
-    ? `Merci pour votre commande — Urban Deam\n\n${lines.join('\n\n')}\n\nTotal : ${total}\nCommande : #${p.orderId.slice(0, 8).toUpperCase()}\n\nQuestions ? contact@urbandeam.com\nurbandeam.com`
-    : `Thank you for your order — Urban Deam\n\n${lines.join('\n\n')}\n\nTotal: ${total}\nOrder: #${p.orderId.slice(0, 8).toUpperCase()}\n\nQuestions? contact@urbandeam.com\nurbandeam.com`
+    ? `Merci pour votre commande — Urbandeam.com\n\n${lines.join('\n\n')}\n\nTotal : ${total}\nCommande : #${p.orderId.slice(0, 8).toUpperCase()}\n\nQuestions ? contact@urbandeam.com\nurbandeam.com`
+    : `Thank you for your order — Urbandeam.com\n\n${lines.join('\n\n')}\n\nTotal: ${total}\nOrder: #${p.orderId.slice(0, 8).toUpperCase()}\n\nQuestions? contact@urbandeam.com\nurbandeam.com`
 }
 
 // ─── Fonction principale : email récapitulatif multi-produits ─────────────────
@@ -281,12 +281,12 @@ export async function sendOrderConfirmationEmail(
   }
 
   const resend = new Resend(apiKey)
-  const firstTitle = params.items[0]?.productTitle ?? 'Urban Deam'
+  const firstTitle = params.items[0]?.productTitle ?? 'Urbandeam.com'
 
   const subject = params.items.length > 1
     ? (fr
-        ? `Vos ${params.items.length} fichiers sont prêts — Urban Deam`
-        : `Your ${params.items.length} files are ready — Urban Deam`)
+        ? `Vos ${params.items.length} fichiers sont prêts — Urbandeam.com`
+        : `Your ${params.items.length} files are ready — Urbandeam.com`)
     : (fr
         ? `Votre fichier est prêt — ${firstTitle}`
         : `Your file is ready — ${firstTitle}`)
@@ -296,7 +296,7 @@ export async function sendOrderConfirmationEmail(
 
   try {
     const { data, error } = await resend.emails.send({
-      from:    `Urban Deam <${FROM}>`,
+      from:    `Urbandeam.com <${FROM}>`,
       to:      params.to,
       subject,
       html:    buildOrderEmailHtml(params),
