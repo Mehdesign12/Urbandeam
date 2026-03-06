@@ -109,7 +109,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Email de confirmation
   if (customerEmail) {
-    sendConfirmationEmail({
+    const emailResult = await sendConfirmationEmail({
       to:                customerEmail,
       customerName,
       productTitle:      localizedTitle(product.title, locale),
@@ -121,7 +121,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       downloadExpiresAt: expAt,
       locale,
       orderId:           order.id,
-    }).catch((e) => console.error('[Webhook] Email error:', e))
+    }).catch((e) => { console.error('[Webhook] Email error:', e); return { success: false } })
+    console.log('[Webhook] Email result:', JSON.stringify(emailResult))
   }
 }
 
@@ -178,7 +179,7 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
 
   // Email de confirmation (fallback — normalement déjà envoyé par /confirm)
   if (customerEmail) {
-    sendConfirmationEmail({
+    const emailResult = await sendConfirmationEmail({
       to:                customerEmail,
       productTitle:      localizedTitle(product.title, locale),
       productImageUrl:   product.image_url ?? null,
@@ -189,6 +190,7 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
       downloadExpiresAt: expAt,
       locale,
       orderId:           order.id,
-    }).catch((e) => console.error('[Webhook PI] Email error:', e))
+    }).catch((e) => { console.error('[Webhook PI] Email error:', e); return { success: false } })
+    console.log('[Webhook PI] Email result:', JSON.stringify(emailResult))
   }
 }

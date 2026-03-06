@@ -161,14 +161,18 @@ export async function POST(req: NextRequest) {
         }
       })
 
-      sendOrderConfirmationEmail({
+      const emailResult = await sendOrderConfirmationEmail({
         to:          customerEmail,
         items:       emailItems,
         amountTotal: pi.amount,
         currency:    pi.currency ?? 'eur',
         locale,
         orderId:     order.id,
-      }).catch(err => console.error('[Confirm] Email error:', err))
+      }).catch(err => {
+        console.error('[Confirm] Email error:', err)
+        return { success: false, error: String(err) }
+      })
+      console.log('[Confirm] Email result:', JSON.stringify(emailResult))
     }
 
     // ── Réponse : tous les tokens ─────────────────────────────────────────────
