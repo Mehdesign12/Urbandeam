@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/server'
 import type { Product } from '@/types'
@@ -153,6 +152,24 @@ export default async function ProductPage({ params }: Props) {
                 </div>
               )}
 
+              {/* ── Social proof / urgence ── */}
+              <div className="ud-detail__social-proof">
+                <div className="ud-detail__stars">
+                  {'★★★★★'.split('').map((s, i) => <span key={i} className="ud-detail__star">{s}</span>)}
+                  <span className="ud-detail__rating">4.8</span>
+                  <span className="ud-detail__reviews">({isFr ? '127 avis' : '127 reviews'})</span>
+                </div>
+                <div className="ud-detail__proof-badges">
+                  <span className="ud-detail__proof-badge">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    {isFr ? '127 acheteurs ce mois' : '127 buyers this month'}
+                  </span>
+                  <span className="ud-detail__proof-badge ud-detail__proof-badge--hot">
+                    🔥 {isFr ? 'Populaire cette semaine' : 'Trending this week'}
+                  </span>
+                </div>
+              </div>
+
               {/* Bouton Add to cart */}
               <BuyButton
                 productId={product.id}
@@ -160,19 +177,24 @@ export default async function ProductPage({ params }: Props) {
                 label={isFr ? 'Acheter maintenant' : 'Buy now'}
               />
 
-              {/* More payment options */}
-              <p style={{ textAlign: 'center', marginTop: '12px' }}>
-                <Link href={`/${locale}/checkout`} style={{ fontSize: '13px', color: '#6B7280', textDecoration: 'underline' }}>
-                  {isFr ? "Plus d'options de paiement" : 'More payment options'}
-                </Link>
-              </p>
-
-              {/* Promo / info */}
-              <div className="ud-detail__promo-box">
-                {isFr
-                  ? `Achetez 2 produits ou plus et économisez 20%.`
-                  : 'Buy two or more products and get 20% off.'
-                }
+              {/* ── Bloc garantie ── */}
+              <div className="ud-detail__trust">
+                <div className="ud-detail__trust-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span>{isFr ? 'Satisfait ou remboursé 30 jours' : '30-day money-back guarantee'}</span>
+                </div>
+                <div className="ud-detail__trust-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  <span>{isFr ? 'Téléchargement immédiat' : 'Instant download'}</span>
+                </div>
+                <div className="ud-detail__trust-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span>{isFr ? 'Paiement 100% sécurisé' : '100% secure payment'}</span>
+                </div>
+                <div className="ud-detail__trust-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span>{isFr ? 'Support inclus' : 'Support included'}</span>
+                </div>
               </div>
 
               {/* Description */}
@@ -237,9 +259,11 @@ export default async function ProductPage({ params }: Props) {
         title={title}
         price={price.full}
         priceRaw={product.price}
+        priceOriginal={price.isOnSale ? price.originalFull : null}
+        isOnSale={price.isOnSale}
         imageUrl={product.image_url}
         locale={locale}
-        label={isFr ? 'Ajouter au panier' : 'Add to cart'}
+        label={isFr ? 'Acheter maintenant' : 'Buy now'}
       />
 
       <Footer locale={locale} />
@@ -287,6 +311,50 @@ export default async function ProductPage({ params }: Props) {
           font-size: 11px; font-weight: 700;
           background: #FEF3C7; color: #92400E;
           padding: 3px 8px; border-radius: 4px;
+        }
+
+        /* ── Social proof ── */
+        .ud-detail__social-proof {
+          display: flex; flex-direction: column; gap: 8px;
+          margin-bottom: 18px; padding-bottom: 18px;
+          border-bottom: 1px solid #F0F0F0;
+        }
+        .ud-detail__stars {
+          display: flex; align-items: center; gap: 4px;
+        }
+        .ud-detail__star { color: #F59E0B; font-size: 14px; }
+        .ud-detail__rating {
+          font-size: 14px; font-weight: 700; color: #0A0A0A; margin-left: 2px;
+        }
+        .ud-detail__reviews { font-size: 13px; color: #6B7280; }
+        .ud-detail__proof-badges {
+          display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .ud-detail__proof-badge {
+          display: inline-flex; align-items: center; gap: 5px;
+          font-size: 11.5px; font-weight: 500; color: #374151;
+          background: #F3F4F6; border: 1px solid #E5E7EB;
+          padding: 3px 9px; border-radius: 20px;
+        }
+        .ud-detail__proof-badge--hot {
+          background: #FFF7ED; border-color: #FED7AA; color: #92400E;
+        }
+
+        /* ── Bloc garantie ── */
+        .ud-detail__trust {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 10px; margin-top: 16px;
+          padding: 14px 16px;
+          background: #F9FAFB; border: 1px solid #E5E7EB;
+          border-radius: 12px;
+        }
+        .ud-detail__trust-item {
+          display: flex; align-items: center; gap: 8px;
+          font-size: 12px; color: #374151; font-weight: 500;
+          line-height: 1.4;
+        }
+        @media (max-width: 480px) {
+          .ud-detail__trust { grid-template-columns: 1fr; gap: 8px; }
         }
         .ud-detail__bundle {
           display: flex; align-items: center; gap: 12px;
