@@ -366,7 +366,18 @@ function PaymentForm({
         const data = await res.json()
         // Support multi-tokens (panier) et mono-token (Buy Now)
         if (data.downloadTokens && data.downloadTokens.length > 0) {
-          onSuccess(data.downloadTokens)
+          // S'assurer que chaque token a bien un productId qui matche products[]
+          // Si le productId du token ne matche pas, on assigne les produits dans l'ordre
+          const tokens = data.downloadTokens as Array<{productId: string; token: string}>
+          const fixedTokens = tokens.map((dt, idx) => {
+            const matched = products.find(p => p.id === dt.productId)
+            if (matched) return dt
+            // fallback : assigner le produit à la même position
+            const fallbackProduct = products[idx]
+            if (fallbackProduct) return { ...dt, productId: fallbackProduct.id }
+            return dt
+          })
+          onSuccess(fixedTokens)
           return
         }
         if (data.downloadToken) {
@@ -746,9 +757,11 @@ function SuccessScreenMulti({
 }) {
   const fr = locale === 'fr'
 
-  // Associer chaque token à son produit — fallback sur slug si titre vide
-  const items = downloadTokens.map(dt => {
-    const prod = products.find(p => p.id === dt.productId) ?? null
+  // Associer chaque token à son produit — fallback sur index si productId ne matche pas
+  const items = downloadTokens.map((dt, idx) => {
+    const prod = products.find(p => p.id === dt.productId)
+      ?? products[idx]  // fallback : produit à la même position
+      ?? null
     if (!prod) return null
     return {
       token: dt.token,
