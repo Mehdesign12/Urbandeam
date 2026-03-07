@@ -64,7 +64,6 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   if (!await checkAdmin()) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   const { id } = await params
 
-  // Vérification clé service role
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error('[DELETE product] SUPABASE_SERVICE_ROLE_KEY manquant')
     return NextResponse.json({ error: 'Configuration serveur manquante' }, { status: 500 })
@@ -81,14 +80,23 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
-  // 2. Supprimer le produit en base
+  // 2. Supprimer les order_items liés (FK constraint order_items_product_id_fkey)
+  const { error: itemsError } = await supabase
+    .from('order_items').delete().eq('product_id', id)
+
+  if (itemsError) {
+    console.error('[DELETE product] order_items delete error:', itemsError)
+    return NextResponse.json({ error: itemsError.message }, { status: 500 })
+  }
+
+  // 3. Supprimer le produit en base
   const { error: deleteError } = await supabase.from('products').delete().eq('id', id)
   if (deleteError) {
     console.error('[DELETE product] delete error:', deleteError)
     return NextResponse.json({ error: deleteError.message }, { status: 500 })
   }
 
-  // 3. Nettoyer les fichiers Supabase Storage (best effort, ne bloque pas)
+  // 4. Nettoyer les fichiers Supabase Storage (best effort, ne bloque pas)
   if (product) {
     try {
       if (product.image_url) {
