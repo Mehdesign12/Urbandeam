@@ -63,8 +63,47 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   if (!await checkAdmin()) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   const { id } = await params
+
+  // Vérification clé service role
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('[DELETE product] SUPABASE_SERVICE_ROLE_KEY manquant')
+    return NextResponse.json({ error: 'Configuration serveur manquante' }, { status: 500 })
+  }
+
   const supabase = createAdminClient()
-  const { error } = await supabase.from('products').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // 1. Récupérer les infos du produit (image + fichier) avant suppression
+  const { data: product, error: fetchError } = await supabase
+    .from('products').select('image_url, file_path').eq('id', id).single()
+
+  if (fetchError) {
+    console.error('[DELETE product] fetch error:', fetchError)
+    return NextResponse.json({ error: fetchError.message }, { status: 500 })
+  }
+
+  // 2. Supprimer le produit en base
+  const { error: deleteError } = await supabase.from('products').delete().eq('id', id)
+  if (deleteError) {
+    console.error('[DELETE product] delete error:', deleteError)
+    return NextResponse.json({ error: deleteError.message }, { status: 500 })
+  }
+
+  // 3. Nettoyer les fichiers Supabase Storage (best effort, ne bloque pas)
+  if (product) {
+    try {
+      if (product.image_url) {
+        const imageKey = product.image_url.split('/storage/v1/object/public/products/')[1]
+        if (imageKey) await supabase.storage.from('products').remove([imageKey])
+      }
+      if (product.file_path) {
+        const fileKey = product.file_path.split('/storage/v1/object/public/products/')[1]
+          ?? product.file_path.replace(/^.*products\//, '')
+        if (fileKey) await supabase.storage.from('products').remove([fileKey])
+      }
+    } catch (storageErr) {
+      console.warn('[DELETE product] storage cleanup error (non-fatal):', storageErr)
+    }
+  }
+
   return NextResponse.json({ success: true })
 }
