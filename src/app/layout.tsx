@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import { Syne, DM_Sans, Montserrat } from "next/font/google";
 import "./globals.css";
 
@@ -214,6 +215,7 @@ export default function RootLayout({
           />
         </noscript>
         {children}
+        <Analytics />
       </body>
     </html>
   );
