@@ -83,8 +83,8 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   openGraph: {
     type: "website",
-    locale: "fr_FR",
-    alternateLocale: ["en_US", "en_GB"],
+    locale: "en_US",
+    alternateLocale: ["fr_FR"],
     siteName: "Urbandeam",
     url: BASE_URL,
     images: [
@@ -151,7 +151,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${syne.variable} ${dmSans.variable} ${montserrat.variable}`}>
+    <html lang="en" className={`${syne.variable} ${dmSans.variable} ${montserrat.variable}`}>
       <head>
         <meta name="theme-color" content="#0A0A0A" />
 
