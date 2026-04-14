@@ -10,6 +10,7 @@ import ProductGrid from '@/components/shop/ProductGrid'
 import BuyButton from '@/components/shop/BuyButton'
 import FaqAccordion from '@/components/shop/FaqAccordion'
 import Reviews from '@/components/shop/Reviews'
+import ReviewsMasonry from '@/components/shop/ReviewsMasonry'
 import ProductGallery from '@/components/shop/ProductGallery'
 import StickyAddToCart from '@/components/shop/StickyAddToCart'
 import ScrollToTop from '@/components/ui/ScrollToTop'
@@ -329,6 +330,13 @@ export default async function ProductPage({ params }: Props) {
           <Reviews
             heading={isFr ? 'Avis de nos clients !' : 'Reviews from our customers!'}
             items={reviewItems}
+          />
+
+          {/* ── Reviews Masonry (DB-driven) ── */}
+          <ReviewsMasonry
+            productId={product.id}
+            locale={isFr ? 'fr' : 'en'}
+            productTitle={title}
           />
 
           {/* ── FAQ ── */}
