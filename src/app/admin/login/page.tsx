@@ -73,7 +73,6 @@ export default function AdminLoginPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••••••"
               className="input"
-              autoFocus
               required
             />
           </div>
