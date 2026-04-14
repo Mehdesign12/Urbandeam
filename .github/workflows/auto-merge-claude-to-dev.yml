@@ -1,0 +1,44 @@
+name: Auto-merge Claude branch to main
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+
+jobs:
+  auto-merge:
+    name: Merge claude branch → main
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create PR and auto-merge into main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          # Create PR if it doesn't exist yet
+          PR_URL=$(gh pr list --head "$BRANCH" --base main --json url -q '.[0].url')
+
+          if [ -z "$PR_URL" ]; then
+            PR_URL=$(gh pr create \
+              --head "$BRANCH" \
+              --base main \
+              --title "Auto-merge: $BRANCH → main" \
+              --body "Automatic merge of Claude branch \`$BRANCH\` into \`main\`.")
+            echo "PR created: $PR_URL"
+          else
+            echo "PR already exists: $PR_URL"
+          fi
+
+          # Enable auto-merge (squash)
+          gh pr merge "$PR_URL" --squash --auto --delete-branch
+          echo "Auto-merge enabled for $PR_URL"
