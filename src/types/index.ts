@@ -70,6 +70,22 @@ export type OrderItem = {
   created_at: string
 }
 
+export type ProductReview = {
+  id: string
+  product_id: string
+  author_name: string
+  is_verified: boolean
+  rating: number
+  title: string | null
+  text: string | null
+  photo_url: string | null
+  review_date: string      // ISO date (YYYY-MM-DD)
+  is_published: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
 // ── Types composés (JOIN) ─────────────────────────────────────
 
 export type OrderWithItems = Order & {
