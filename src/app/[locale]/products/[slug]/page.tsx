@@ -9,6 +9,7 @@ import Footer from '@/components/layout/Footer'
 import ProductGrid from '@/components/shop/ProductGrid'
 import BuyButton from '@/components/shop/BuyButton'
 import FaqAccordion from '@/components/shop/FaqAccordion'
+import Reviews from '@/components/shop/Reviews'
 import ProductGallery from '@/components/shop/ProductGallery'
 import StickyAddToCart from '@/components/shop/StickyAddToCart'
 import ScrollToTop from '@/components/ui/ScrollToTop'
@@ -96,6 +97,40 @@ export default async function ProductPage({ params }: Props) {
   const images = product.image_url
     ? [product.image_url, product.image_url, product.image_url]
     : []
+
+  const reviewItems = isFr ? [
+    {
+      title: 'Enfin constant au quotidien',
+      text: "J'ai testé plein d'apps d'habitudes, rien ne m'a rendu aussi responsable que ce template. La checklist intégrée et les graphiques rendent mes progrès vraiment concrets. J'ai vraiment hâte de mettre à jour mon tableau chaque jour.",
+      author: 'Thomas M.',
+    },
+    {
+      title: 'Les visuels aident vraiment',
+      text: "Ce que j'adore c'est la façon dont les courbes me montrent immédiatement quand je décroche et quand j'ai besoin de remonter la pente. Très motivant. Le template est clair, facile à prendre en main, et m'a aidé à construire de meilleures routines bien plus vite que prévu.",
+      author: 'Julien R.',
+    },
+    {
+      title: "Exactement ce qu'il me fallait",
+      text: "Ce tracker d'habitudes est simple, organisé et incroyablement efficace. Cocher mes objectifs quotidiens est satisfaisant et les graphiques de progrès me motivent à rester sur la bonne voie. Je me sens enfin aligné avec mes routines plus régulièrement.",
+      author: 'Daniel S.',
+    },
+  ] : [
+    {
+      title: 'Finally staying consistent!',
+      text: "I've tried tons of habit apps, but nothing kept me as accountable as this spreadsheet. The built-in checklist and pie charts make it genuinely fun to see my progress. I actually look forward to updating it every day.",
+      author: 'Ethan M.',
+    },
+    {
+      title: 'The visuals really help',
+      text: "What I love most is how the charts instantly show where I'm improving and where I need to step it up, it's super motivating. The layout is clean, easy to navigate, and it helped me build better routines way faster than I expected.",
+      author: 'Jordan R.',
+    },
+    {
+      title: 'Exactly what I needed.',
+      text: "This habit tracker is simple, organized, and incredibly effective. Checking off my daily goals feels great, and the progress graphs keep me motivated to stay on track. I've already noticed myself sticking to my routines more consistently.",
+      author: 'Daniel S.',
+    },
+  ]
 
   const faqItems = isFr ? [
     { q: 'Comment je reçois mon fichier ?', a: "Dès que votre paiement est confirmé, vous recevez un email avec le lien de téléchargement. Le fichier est aussi disponible dans votre espace client." },
@@ -289,6 +324,12 @@ export default async function ProductPage({ params }: Props) {
               </ul>
             </div>
           </div>
+
+          {/* ── Reviews ── */}
+          <Reviews
+            heading={isFr ? 'Avis de nos clients !' : 'Reviews from our customers!'}
+            items={reviewItems}
+          />
 
           {/* ── FAQ ── */}
           <div className="ud-detail__faq">
