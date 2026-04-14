@@ -623,7 +623,6 @@ export default function BuyButton({ productId, cartItems, locale, label, _autoOp
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={fr ? 'votre@email.com' : 'your@email.com'}
                 className="udm-input"
-                autoFocus
                 autoComplete="email"
               />
               {emailErr   && <p className="udm-error">{emailErr}</p>}
