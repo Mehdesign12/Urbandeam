@@ -39,6 +39,18 @@ export function CartProvider({ children, locale }: { children: ReactNode; locale
   const addItem = useCallback((item: CartItem) => {
     setItems(prev => {
       if (prev.find(i => i.id === item.id)) return prev
+      // Fire Meta Pixel AddToCart for new items
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fbq = (window as any).fbq
+      if (typeof fbq === 'function') {
+        fbq('track', 'AddToCart', {
+          content_ids: [item.id],
+          content_name: item.title,
+          content_type: 'product',
+          value: item.price / 100,
+          currency: 'EUR',
+        })
+      }
       return [...prev, item]
     })
     setIsOpen(true)

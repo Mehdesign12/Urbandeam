@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import PixelPurchase from '@/components/pixel/PixelPurchase'
 import type { Metadata } from 'next'
 
 type Props = {
@@ -33,6 +34,9 @@ async function SuccessContent({
   // Récupérer la session Stripe pour afficher les détails
   let customerEmail = ''
   let productTitle = ''
+  let purchaseValue = 0
+  let purchaseCurrency = 'EUR'
+  let purchaseProductId = ''
 
   if (sessionId) {
     try {
@@ -44,6 +48,11 @@ async function SuccessContent({
         session.line_items?.data?.[0]?.description ??
         session.line_items?.data?.[0]?.price?.product?.toString() ??
         ''
+
+      // Données pour le pixel Purchase
+      purchaseValue = (session.amount_total ?? 0) / 100
+      purchaseCurrency = (session.currency ?? 'eur').toUpperCase()
+      purchaseProductId = session.metadata?.product_id ?? ''
 
       // Essayer de récupérer le nom du produit depuis Supabase via metadata
       const productSlug = session.metadata?.product_slug
@@ -69,6 +78,14 @@ async function SuccessContent({
   }
 
   return (
+    <>
+      {purchaseValue > 0 && (
+        <PixelPurchase
+          contentIds={purchaseProductId ? [purchaseProductId] : []}
+          value={purchaseValue}
+          currency={purchaseCurrency}
+        />
+      )}
     <div style={{
       minHeight: '60vh',
       display: 'flex',
@@ -171,6 +188,7 @@ async function SuccessContent({
         </div>
       </div>
     </div>
+    </>
   )
 }
 
