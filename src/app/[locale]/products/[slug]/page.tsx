@@ -14,6 +14,7 @@ import ReviewsMasonry from '@/components/shop/ReviewsMasonry'
 import ProductGallery from '@/components/shop/ProductGallery'
 import StickyAddToCart from '@/components/shop/StickyAddToCart'
 import ScrollToTop from '@/components/ui/ScrollToTop'
+import PixelViewContent from '@/components/pixel/PixelViewContent'
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>
@@ -197,6 +198,12 @@ export default async function ProductPage({ params }: Props) {
     <>
       <Navbar locale={locale} />
       <ScrollToTop />
+      <PixelViewContent
+        contentId={product.id}
+        contentName={title}
+        value={product.price / 100}
+        currency="EUR"
+      />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
