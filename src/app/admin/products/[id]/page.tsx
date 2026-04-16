@@ -33,6 +33,7 @@ export default async function EditProductPage({ params }: Props) {
     price_original: product.price_original ? String(product.price_original / 100) : '',
     category:       product.category ?? 'pdf',
     image_url:      product.image_url ?? '',
+    gallery_urls:   Array.isArray(product.gallery_urls) ? product.gallery_urls : [],
     file_path:      product.file_path ?? '',
     is_published:   product.is_published ?? false,
     sort_order:     String(product.sort_order ?? 0),
