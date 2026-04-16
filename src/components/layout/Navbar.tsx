@@ -11,7 +11,7 @@ const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD'] as const
 export default function Navbar({ locale }: { locale: string }) {
   const pathname = usePathname()
   const { itemCount, openCart } = useCart()
-  const [currency, setCurrency] = useState('USD')
+  const [currency, setCurrency] = useState('EUR')
   const [currencyOpen, setCurrencyOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
