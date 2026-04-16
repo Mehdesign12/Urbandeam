@@ -86,11 +86,11 @@ const SORT_OPTIONS = {
 const FILTER_OPTIONS = {
   fr: [
     { label: 'Disponibilité', options: ['Tous les produits', 'En stock'] },
-    { label: 'Prix', options: ['Tous les prix', 'Moins de 10€', '10€ - 20€', 'Plus de 20€'] },
+    { label: 'Prix', options: ['Tous les prix', 'Moins de $10', '$10 - $20', 'Plus de $20'] },
   ],
   en: [
     { label: 'Availability', options: ['All products', 'In stock'] },
-    { label: 'Price', options: ['All prices', 'Under €10', '€10 - €20', 'Over €20'] },
+    { label: 'Price', options: ['All prices', 'Under $10', '$10 - $20', 'Over $20'] },
   ],
 }
 

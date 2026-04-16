@@ -47,7 +47,7 @@ export default function AdminOrdersClient() {
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
 
-  const fmt     = (cents: number) => `€${(cents / 100).toFixed(2)}`
+  const fmt     = (cents: number) => `$${(cents / 100).toFixed(2)}`
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
   const filtered = orders.filter(o => {

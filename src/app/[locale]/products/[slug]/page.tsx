@@ -161,7 +161,7 @@ export default async function ProductPage({ params }: Props) {
     offers: {
       '@type': 'Offer',
       price: (product.price / 100).toFixed(2),
-      priceCurrency: 'EUR',
+      priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
       url: `${BASE_URL}/${locale}/products/${slug}`,
       seller: { '@type': 'Organization', name: 'Urbandeam' },
@@ -204,7 +204,7 @@ export default async function ProductPage({ params }: Props) {
         contentId={product.id}
         contentName={title}
         value={product.price / 100}
-        currency="EUR"
+        currency="USD"
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />

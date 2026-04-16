@@ -314,16 +314,16 @@ export default function ProductForm({ initialData, productId, mode }: Props) {
           {/* Prix */}
           <div style={cardStyle}>
             <h3 style={sectionTitle}>Prix</h3>
-            <Field label="Prix de vente (€) *">
+            <Field label="Prix de vente ($) *">
               <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '15px', color: '#0A0A0A' }}>€</span>
+                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '15px', color: '#0A0A0A' }}>$</span>
                 <input className="input" style={{ paddingLeft: '28px' }} type="number" step="0.01" min="0" value={form.price} onChange={e => set('price', e.target.value)} placeholder="19.00" required />
               </div>
             </Field>
             <div style={{ marginTop: '12px' }}>
               <Field label="Prix barré (optionnel)">
                 <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '15px', color: '#A3A3A3' }}>€</span>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '15px', color: '#A3A3A3' }}>$</span>
                   <input className="input" style={{ paddingLeft: '28px' }} type="number" step="0.01" min="0" value={form.price_original} onChange={e => set('price_original', e.target.value)} placeholder="29.00" />
                 </div>
               </Field>

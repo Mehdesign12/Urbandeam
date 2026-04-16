@@ -31,7 +31,7 @@ export default async function AdminDashboard() {
   const totalRevenue = ((revenueResult.data ?? []) as { amount_total: number }[])
     .reduce((s, o) => s + (o.amount_total ?? 0), 0)
 
-  const fmt = (cents: number) => `€${(cents / 100).toFixed(2)}`
+  const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 
   const stats = [

@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       line_items: [
         {
           price_data: {
-            currency: 'eur',
+            currency: 'usd',
             unit_amount: product.price, // déjà en centimes
             product_data: {
               name: title,

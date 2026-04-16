@@ -35,7 +35,7 @@ async function SuccessContent({
   let customerEmail = ''
   let productTitle = ''
   let purchaseValue = 0
-  let purchaseCurrency = 'EUR'
+  let purchaseCurrency = 'USD'
   let purchaseProductId = ''
 
   if (sessionId) {
@@ -51,7 +51,7 @@ async function SuccessContent({
 
       // Données pour le pixel Purchase
       purchaseValue = (session.amount_total ?? 0) / 100
-      purchaseCurrency = (session.currency ?? 'eur').toUpperCase()
+      purchaseCurrency = (session.currency ?? 'usd').toUpperCase()
       purchaseProductId = session.metadata?.product_id ?? ''
 
       // Essayer de récupérer le nom du produit depuis Supabase via metadata

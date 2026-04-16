@@ -17,8 +17,8 @@ const CURRENCY_SYMBOLS: Record<Currency, string> = {
  */
 export function formatPrice(
   amountInCents: number,
-  currency: Currency = 'eur',
-  locale: string = 'fr-FR'
+  currency: Currency = 'usd',
+  locale: string = 'en-US'
 ): string {
   const amount = amountInCents / 100
   return new Intl.NumberFormat(locale, {
@@ -34,18 +34,18 @@ export function formatPrice(
 export function getPriceDisplay(
   price: number,
   priceOriginal: number | null,
-  currency: Currency = 'eur'
+  currency: Currency = 'usd'
 ): PriceDisplay {
   const symbol = CURRENCY_SYMBOLS[currency]
-  const amount = (price / 100).toFixed(2).replace('.', ',')
-  const full = `${amount} ${symbol}`
+  const amount = (price / 100).toFixed(2)
+  const full = `${symbol}${amount}`
   const isOnSale = priceOriginal !== null && priceOriginal > price
 
   if (!isOnSale || !priceOriginal) {
     return { amount, currency: symbol, full, isOnSale: false }
   }
 
-  const originalAmount = (priceOriginal / 100).toFixed(2).replace('.', ',')
+  const originalAmount = (priceOriginal / 100).toFixed(2)
   const discountPercent = Math.round((1 - price / priceOriginal) * 100)
 
   return {
@@ -53,7 +53,7 @@ export function getPriceDisplay(
     currency: symbol,
     full,
     isOnSale: true,
-    originalFull: `${originalAmount} ${symbol}`,
+    originalFull: `${symbol}${originalAmount}`,
     discountPercent,
   }
 }

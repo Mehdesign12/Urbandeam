@@ -48,7 +48,7 @@ export function CartProvider({ children, locale }: { children: ReactNode; locale
           content_name: item.title,
           content_type: 'product',
           value: item.price / 100,
-          currency: 'EUR',
+          currency: 'USD',
         })
       }
       return [...prev, item]
@@ -61,7 +61,7 @@ export function CartProvider({ children, locale }: { children: ReactNode; locale
   }, [])
 
   const total = items.reduce((s, i) => s + i.price, 0)
-  const fmt = (cents: number) => `€${(cents / 100).toFixed(2)}`
+  const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`
 
   return (
     <CartContext.Provider value={{
@@ -159,7 +159,7 @@ export function CartProvider({ children, locale }: { children: ReactNode; locale
                 </div>
                 <div className="ud-cart__total-row">
                   <span style={{ fontSize: '14px', fontWeight: 500 }}>Estimated total</span>
-                  <span style={{ fontSize: '16px', fontWeight: 700 }}>{fmt(total)} EUR</span>
+                  <span style={{ fontSize: '16px', fontWeight: 700 }}>{fmt(total)} USD</span>
                 </div>
                 <p style={{ fontSize: '12px', color: '#9CA3AF', marginBottom: '16px' }}>
                   {locale === 'fr' ? 'Taxes calculées lors du paiement.' : 'Taxes and shipping calculated at checkout.'}

@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
     // On stocke les product_ids séparés par virgule dans les métadonnées
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
-      currency: 'eur',
+      currency: 'usd',
       customer: customerId,
       receipt_email: email,
       metadata: {

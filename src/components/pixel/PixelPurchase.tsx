@@ -11,7 +11,7 @@ type Props = {
 export default function PixelPurchase({
   contentIds,
   value,
-  currency = 'EUR',
+  currency = 'USD',
 }: Props) {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

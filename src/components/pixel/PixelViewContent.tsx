@@ -13,7 +13,7 @@ export default function PixelViewContent({
   contentId,
   contentName,
   value,
-  currency = 'EUR',
+  currency = 'USD',
 }: Props) {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
