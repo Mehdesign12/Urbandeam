@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
         customer_email:        customerEmail,
         customer_name:         '',
         amount_total:          pi.amount,
-        currency:              pi.currency ?? 'eur',
+        currency:              pi.currency ?? 'usd',
         status:                'paid',
         locale,
       })
@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
         to:          customerEmail,
         items:       emailItems,
         amountTotal: pi.amount,
-        currency:    pi.currency ?? 'eur',
+        currency:    pi.currency ?? 'usd',
         locale,
         orderId:     order.id,
       }).catch(err => {

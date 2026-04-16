@@ -334,7 +334,7 @@ function PaymentForm({
   const fr = locale === 'fr'
 
   const fmt = (cents: number) =>
-    (cents / 100).toLocaleString(fr ? 'fr-FR' : 'en-US', { style: 'currency', currency: 'EUR' })
+    (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
 
   const total = products.reduce((s, p) => s + p.price, 0)
 

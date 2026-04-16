@@ -48,7 +48,7 @@ export default function AdminProductsClient() {
     return t.toLowerCase().includes(search.toLowerCase()) || p.slug.includes(search.toLowerCase())
   })
 
-  const fmt = (cents: number) => `€${(cents / 100).toFixed(2)}`
+  const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`
 
   return (
     <div>
