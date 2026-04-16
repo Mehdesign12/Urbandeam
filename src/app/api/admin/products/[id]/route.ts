@@ -27,7 +27,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   const body = await req.json()
   const {
     slug, title_fr, title_en, description_fr, description_en,
-    price, price_original, category, image_url, file_path,
+    price, price_original, category, image_url, gallery_urls, file_path,
     is_published, sort_order,
   } = body
 
@@ -48,6 +48,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   if (price_original !== undefined)   updateData.price_original = price_original ? Math.round(Number(price_original) * 100) : null
   if (category !== undefined)         updateData.category = category
   if (image_url !== undefined)        updateData.image_url = image_url
+  if (gallery_urls !== undefined)     updateData.gallery_urls = Array.isArray(gallery_urls) ? gallery_urls : []
   if (file_path !== undefined)        updateData.file_path = file_path
   if (is_published !== undefined)     updateData.is_published = is_published
   if (sort_order !== undefined)       updateData.sort_order = sort_order

@@ -36,6 +36,7 @@ export type Product = {
   price_original: number | null
   category: ProductCategory
   image_url: string | null
+  gallery_urls: string[]
   file_path: string | null
   is_published: boolean
   sort_order: number

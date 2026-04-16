@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const {
     slug, title_fr, title_en, description_fr, description_en,
-    price, price_original, category, image_url, file_path,
+    price, price_original, category, image_url, gallery_urls, file_path,
     is_published, sort_order,
   } = body
 
@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
       price_original: price_original ? Math.round(Number(price_original) * 100) : null,
       category: category ?? 'pdf',
       image_url: image_url ?? null,
+      gallery_urls: Array.isArray(gallery_urls) ? gallery_urls : [],
       file_path: file_path ?? null,
       is_published: is_published ?? false,
       sort_order: sort_order ?? 0,

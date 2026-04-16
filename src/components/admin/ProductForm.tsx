@@ -14,6 +14,7 @@ type ProductFormData = {
   price_original: string
   category: string
   image_url: string
+  gallery_urls: string[]
   file_path: string
   is_published: boolean
   sort_order: string
@@ -33,8 +34,9 @@ const CATEGORIES = [
 
 export default function ProductForm({ initialData, productId, mode }: Props) {
   const router = useRouter()
-  const imageInputRef = useRef<HTMLInputElement>(null)
-  const fileInputRef  = useRef<HTMLInputElement>(null)
+  const imageInputRef   = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef    = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState<ProductFormData>({
     slug:            initialData?.slug            ?? '',
@@ -46,6 +48,7 @@ export default function ProductForm({ initialData, productId, mode }: Props) {
     price_original:  initialData?.price_original  ?? '',
     category:        initialData?.category        ?? 'pdf',
     image_url:       initialData?.image_url       ?? '',
+    gallery_urls:    initialData?.gallery_urls    ?? [],
     file_path:       initialData?.file_path       ?? '',
     is_published:    initialData?.is_published    ?? false,
     sort_order:      initialData?.sort_order      ?? '0',
@@ -53,12 +56,13 @@ export default function ProductForm({ initialData, productId, mode }: Props) {
 
   const [saving,        setSaving]        = useState(false)
   const [error,         setError]         = useState('')
-  const [uploadingImg,  setUploadingImg]  = useState(false)
-  const [uploadingFile, setUploadingFile] = useState(false)
+  const [uploadingImg,     setUploadingImg]     = useState(false)
+  const [uploadingGallery, setUploadingGallery] = useState(false)
+  const [uploadingFile,    setUploadingFile]    = useState(false)
   const [imgPreview,    setImgPreview]    = useState(form.image_url)
   const [fileName,      setFileName]      = useState(form.file_path ? form.file_path.split('/').pop() ?? '' : '')
 
-  const set = (key: keyof ProductFormData, val: string | boolean) =>
+  const set = <K extends keyof ProductFormData>(key: K, val: ProductFormData[K]) =>
     setForm(prev => ({ ...prev, [key]: val }))
 
   // Auto-slug depuis le titre FR
@@ -96,6 +100,39 @@ export default function ProductForm({ initialData, productId, mode }: Props) {
     } finally {
       setUploadingImg(false)
     }
+  }
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+    setUploadingGallery(true)
+    setError('')
+    try {
+      const uploaded: string[] = []
+      for (const file of files) {
+        const data = await uploadFile(file, 'image')
+        if (data.url) uploaded.push(data.url)
+      }
+      set('gallery_urls', [...form.gallery_urls, ...uploaded])
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erreur upload galerie')
+    } finally {
+      setUploadingGallery(false)
+      // Reset input to allow re-uploading same files
+      if (galleryInputRef.current) galleryInputRef.current.value = ''
+    }
+  }
+
+  const removeGalleryImage = (index: number) => {
+    set('gallery_urls', form.gallery_urls.filter((_, i) => i !== index))
+  }
+
+  const moveGalleryImage = (index: number, dir: -1 | 1) => {
+    const target = index + dir
+    if (target < 0 || target >= form.gallery_urls.length) return
+    const next = [...form.gallery_urls]
+    ;[next[index], next[target]] = [next[target], next[index]]
+    set('gallery_urls', next)
   }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -337,6 +374,51 @@ export default function ProductForm({ initialData, productId, mode }: Props) {
                 Supprimer l&apos;image
               </button>
             )}
+          </div>
+
+          {/* Galerie d'images supplémentaires */}
+          <div style={cardStyle}>
+            <h3 style={sectionTitle}>Galerie d&apos;images</h3>
+            <p style={{ fontSize: '12px', color: '#A3A3A3', marginBottom: '12px' }}>
+              Images additionnelles affichées dans le carrousel de la fiche produit.
+            </p>
+
+            {form.gallery_urls.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px', marginBottom: '12px' }}>
+                {form.gallery_urls.map((url, i) => (
+                  <div key={`${url}-${i}`} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: '1px solid #E5E5E5', background: '#F9FAFB' }}>
+                    <Image src={url} alt={`Galerie ${i + 1}`} fill style={{ objectFit: 'cover' }} sizes="100px" />
+                    <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '2px' }}>
+                      {i > 0 && (
+                        <button type="button" onClick={() => moveGalleryImage(i, -1)} title="Déplacer vers le haut" style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>↑</button>
+                      )}
+                      {i < form.gallery_urls.length - 1 && (
+                        <button type="button" onClick={() => moveGalleryImage(i, 1)} title="Déplacer vers le bas" style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>↓</button>
+                      )}
+                      <button type="button" onClick={() => removeGalleryImage(i)} title="Supprimer" style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#EF4444', color: 'white', border: 'none', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>×</button>
+                    </div>
+                    <div style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.7)', color: 'white', borderRadius: '4px', padding: '1px 5px', fontSize: '10px', fontWeight: 600 }}>{i + 1}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => galleryInputRef.current?.click()}
+              disabled={uploadingGallery}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px dashed #E5E5E5', background: '#F9FAFB', color: '#0A0A0A', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              {uploadingGallery ? 'Upload en cours…' : form.gallery_urls.length === 0 ? '+ Ajouter des images' : '+ Ajouter plus d\'images'}
+            </button>
+            <input
+              ref={galleryInputRef}
+              type="file"
+              multiple
+              style={{ display: 'none' }}
+              accept="image/*"
+              onChange={handleGalleryUpload}
+            />
           </div>
         </div>
       </div>

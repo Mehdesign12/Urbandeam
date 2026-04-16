@@ -95,10 +95,12 @@ export default async function ProductPage({ params }: Props) {
   const price = getPriceDisplay(product.price, product.price_original)
   const categoryLabel = CATEGORY_LABELS[product.category] ?? product.category
 
-  // Simuler plusieurs images (en prod, stocker dans un tableau JSONB)
-  const images = product.image_url
-    ? [product.image_url, product.image_url, product.image_url]
-    : []
+  // Galerie : image principale + images additionnelles (admin)
+  const gallery = Array.isArray(product.gallery_urls) ? product.gallery_urls : []
+  const images = [
+    ...(product.image_url ? [product.image_url] : []),
+    ...gallery,
+  ]
 
   const reviewItems = isFr ? [
     {
