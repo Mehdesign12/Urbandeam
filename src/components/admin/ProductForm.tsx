@@ -20,19 +20,16 @@ type ProductFormData = {
   sort_order: string
 }
 
+type CategoryOption = { value: string; label: string; color?: string }
+
 type Props = {
   initialData?: Partial<ProductFormData>
   productId?: string
   mode: 'create' | 'edit'
+  categories?: CategoryOption[]
 }
 
-const CATEGORIES = [
-  { value: 'excel', label: '📊 Excel' },
-  { value: 'pdf',   label: '📄 PDF' },
-  { value: 'notion', label: '🗒️ Notion' },
-]
-
-export default function ProductForm({ initialData, productId, mode }: Props) {
+export default function ProductForm({ initialData, productId, mode, categories = [] }: Props) {
   const router = useRouter()
   const imageInputRef   = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
@@ -333,17 +330,27 @@ export default function ProductForm({ initialData, productId, mode }: Props) {
           {/* Catégorie */}
           <div style={cardStyle}>
             <h3 style={sectionTitle}>Catégorie</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {CATEGORIES.map(({ value, label }) => (
-                <label key={value} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '8px', border: `1.5px solid ${form.category === value ? '#0A0A0A' : '#E5E5E5'}`, cursor: 'pointer', transition: 'border-color 0.12s' }}>
-                  <input type="radio" name="category" value={value} checked={form.category === value} onChange={() => set('category', value)} style={{ display: 'none' }} />
-                  <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: `2px solid ${form.category === value ? '#0A0A0A' : '#D1D5DB'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {form.category === value && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0A0A0A' }} />}
-                  </div>
-                  <span style={{ fontSize: '14px', fontWeight: form.category === value ? 500 : 400 }}>{label}</span>
-                </label>
-              ))}
-            </div>
+            {categories.length === 0 ? (
+              <p style={{ fontSize: '13px', color: '#9CA3AF' }}>
+                Aucune catégorie disponible.{' '}
+                <a href="/admin/categories" style={{ color: '#0A0A0A', textDecoration: 'underline' }}>
+                  Créez-en une d&apos;abord.
+                </a>
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {categories.map(({ value, label, color }) => (
+                  <label key={value} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '8px', border: `1.5px solid ${form.category === value ? '#0A0A0A' : '#E5E5E5'}`, cursor: 'pointer', transition: 'border-color 0.12s' }}>
+                    <input type="radio" name="category" value={value} checked={form.category === value} onChange={() => set('category', value)} style={{ display: 'none' }} />
+                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: `2px solid ${form.category === value ? '#0A0A0A' : '#D1D5DB'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {form.category === value && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0A0A0A' }} />}
+                    </div>
+                    {color && <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color, flexShrink: 0 }} />}
+                    <span style={{ fontSize: '14px', fontWeight: form.category === value ? 500 : 400 }}>{label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Image */}

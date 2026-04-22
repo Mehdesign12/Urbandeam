@@ -36,6 +36,15 @@ const NAV = [
     ),
   },
   {
+    label: 'Catégories',
+    href: '/admin/categories',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 6h16M4 12h8M4 18h12"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Avis',
     href: '/admin/reviews',
     icon: (

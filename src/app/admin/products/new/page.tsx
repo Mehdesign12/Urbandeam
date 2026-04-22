@@ -2,9 +2,21 @@ import Link from 'next/link'
 import ProductForm from '@/components/admin/ProductForm'
 import { requireAdmin } from '@/lib/admin-auth'
 import AdminShell from '@/components/admin/AdminShell'
+import { createAdminClient } from '@/lib/supabase/server'
+
+async function getCategories() {
+  const supabase = createAdminClient()
+  const { data } = await supabase.from('categories').select('id,slug,name,color').order('position', { ascending: true })
+  return (data ?? []).map((c: { slug: string; name: Record<string, string>; color: string }) => ({
+    value: c.slug,
+    label: c.name?.fr ?? c.slug,
+    color: c.color,
+  }))
+}
 
 export default async function NewProductPage() {
   await requireAdmin()
+  const categories = await getCategories()
 
   return (
     <AdminShell>
@@ -24,7 +36,7 @@ export default async function NewProductPage() {
           Créer un produit
         </h1>
 
-        <ProductForm mode="create" />
+        <ProductForm mode="create" categories={categories} />
       </div>
     </AdminShell>
   )

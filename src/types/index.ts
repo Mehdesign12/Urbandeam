@@ -2,7 +2,7 @@
 // URBANDEAM — Types TypeScript (Supabase)
 // ─────────────────────────────────────────────────────────────
 
-export type ProductCategory = 'excel' | 'pdf' | 'notion'
+export type ProductCategory = string
 export type OrderStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 export type Locale = 'fr' | 'en' | 'es'
 
@@ -12,6 +12,17 @@ export type I18nField = {
 }
 
 // ── Database types ────────────────────────────────────────────
+
+export type Category = {
+  id: string
+  slug: string
+  name: I18nField
+  color: string
+  position: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
 
 export type Profile = {
   id: string

@@ -12,6 +12,13 @@ export default async function EditProductPage({ params }: Props) {
   const { id } = await params
   const supabase = createAdminClient()
 
+  const { data: cats } = await supabase.from('categories').select('slug,name,color').order('position', { ascending: true })
+  const categories = (cats ?? []).map((c: { slug: string; name: Record<string, string>; color: string }) => ({
+    value: c.slug,
+    label: c.name?.fr ?? c.slug,
+    color: c.color,
+  }))
+
   const { data: product, error } = await supabase
     .from('products')
     .select('*')
@@ -59,7 +66,7 @@ export default async function EditProductPage({ params }: Props) {
           Éditer le produit
         </h1>
 
-        <ProductForm mode="edit" productId={id} initialData={initialData} />
+        <ProductForm mode="edit" productId={id} initialData={initialData} categories={categories} />
       </div>
     </AdminShell>
   )

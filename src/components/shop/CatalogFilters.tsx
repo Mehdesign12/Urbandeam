@@ -30,12 +30,9 @@ export default function CatalogFilters({ locale, filterOptions }: Props) {
     { label: locale === 'fr' ? 'Prix' : 'Price', options: [locale === 'fr' ? 'Tous les prix' : 'All prices'] },
   ]
 
-  // Catégories comme filtres rapides
   const catFilters = [
     { value: '', label: locale === 'fr' ? 'Tous' : 'All' },
-    { value: 'excel', label: 'Excel' },
-    { value: 'notion', label: 'Notion' },
-    { value: 'pdf', label: 'PDF' },
+    ...categories.filter(c => c.value !== ''),
   ]
 
   const activeCat = searchParams.get('cat') ?? ''

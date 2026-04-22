@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { createAdminClient } from '@/lib/supabase/server'
-import type { Product, ProductCategory } from '@/types'
+import type { Product, Category } from '@/types'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ProductGrid from '@/components/shop/ProductGrid'
@@ -46,12 +46,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+async function getCategories(): Promise<Category[]> {
+  try {
+    const supabase = createAdminClient()
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('is_active', true)
+      .order('position', { ascending: true })
+    return data ?? []
+  } catch { return [] }
+}
+
 async function getProducts(category?: string, sort?: string): Promise<Product[]> {
   try {
     const supabase = createAdminClient()
     let query = supabase.from('products').select('*').eq('is_published', true)
-    if (category && ['excel', 'pdf', 'notion'].includes(category)) {
-      query = query.eq('category', category as ProductCategory)
+    if (category) {
+      query = query.eq('category', category)
     }
     switch (sort) {
       case 'price_asc':  query = query.order('price', { ascending: true }); break
@@ -99,9 +111,16 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const { cat, sort } = await searchParams
   const isFr = locale === 'fr'
 
-  const products = await getProducts(cat, sort)
+  const [products, categories] = await Promise.all([
+    getProducts(cat, sort),
+    getCategories(),
+  ])
   const sortOptions = SORT_OPTIONS[locale as 'fr' | 'en'] ?? SORT_OPTIONS.fr
   const filterOptions = FILTER_OPTIONS[locale as 'fr' | 'en'] ?? FILTER_OPTIONS.fr
+  const catOptions = categories.map(c => ({
+    value: c.slug,
+    label: (c.name as Record<string, string>)[locale] ?? (c.name as Record<string, string>).fr ?? c.slug,
+  }))
 
   return (
     <>
@@ -126,7 +145,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
               </div>
             }>
               <CatalogFilters
-                categories={filterOptions.map(f => ({ value: '', label: f.label }))}
+                categories={catOptions}
                 activeCategory={cat ?? ''}
                 locale={locale}
                 filterOptions={filterOptions}

@@ -83,6 +83,28 @@ cp .env.example .env.local
 npm run dev
 ```
 
+## Architecture — Décisions techniques
+
+### Système de catégories (implémenté : Option A)
+
+**Option A — Catégories dynamiques simples** ✅ *Implémenté*
+- Table `categories` (slug, name i18n, color, position, is_active)
+- 1 catégorie par produit (champ `category text` dans `products`)
+- CRUD admin complet avec réordonnancement
+- Idéal pour un catalogue < 100 produits
+
+**Option B — Catégories multi-select** *(à implémenter si besoin)*
+- Table `categories` + table de jonction `product_categories`
+- Un produit peut appartenir à plusieurs catégories
+- Nécessite : migration `products.category` → suppression du champ, création de `product_categories(product_id, category_id)`, mise à jour des filtres et requêtes
+
+**Option C — Catégories + sous-catégories** *(à implémenter si besoin)*
+- Hiérarchie à deux niveaux via `categories.parent_id uuid references categories(id)`
+- Filtres à deux niveaux sur le front (catégorie parente → sous-catégorie)
+- Recommandé si le catalogue dépasse 50 produits avec chevauchements thématiques
+
+---
+
 ## Roadmap
 
 - [x] **Phase 1** — Setup (Next.js 16, Tailwind v4, Supabase, next-intl)
